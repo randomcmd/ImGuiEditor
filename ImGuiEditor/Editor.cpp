@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "ImGuiStructs.h"
+
 void ReMi::EditorWindow()
 {
     ImGui::Begin("Hello, world!");
@@ -14,75 +16,25 @@ void ReMi::EditorWindow()
         ImGui::ShowDemoWindow(&demo);
     }
     
-    ImGui::Button("Button");
-    // Our buttons are both drag sources and drag targets here!
-    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-    {
-        int n = 39;
-        ImGui::SetDragDropPayload("EDITOR_NEW_BUTTON", &n, sizeof(int));
-        ImGui::Text("This is a drag and drop source");
-        ImGui::EndDragDropSource();
-    }
-    
     ImGui::End();
 }
 
 void ReMi::Canvas()
 {
     ImGui::Begin("Canvas");
-    static std::vector<int> numbers = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    static ImVec2 cursorPos;
-    static ImVec2 mousePos;
-    static bool sameLine = false;
-    static bool previewButton = false;
+    std::vector<ImStructs::ImStruct*> ImGuiStructs;
+    auto yay = new ImStructs::Text;
+    yay->text = "Hello, purryaya!";
+    ImGuiStructs.push_back(yay);
     
-    for (auto number : numbers)
+    // iterate through all the structs and draw them
+    for (auto component : ImGuiStructs)
     {
-        if(number == 69)
-        {
-            ImGui::SameLine();
-            continue;
-        }
-        
-        ImGui::Button(std::to_string(number).c_str());
-        cursorPos = ImGui::GetCursorScreenPos();
-        mousePos = ImGui::GetMousePos();
+        component->Draw();
+        if(ImGui::IsItemHovered()) ImGui::SetTooltip("This is a tooltip");
+        if(ImGui::IsItemClicked()) component->clicked = true;
+        if(component->clicked) component->Editor();
     }
-
-    sameLine = mousePos.y < cursorPos.y;
-
-    if(sameLine)
-    {
-        ImGui::SameLine();
-    }
-    
-    ImGui::Button("Reciever");
-    
-    if (ImGui::BeginDragDropTarget())
-    {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EDITOR_NEW_BUTTON"))
-        {
-            IM_ASSERT(payload->DataSize == sizeof(int));
-
-            if(sameLine)
-            {
-                numbers.push_back(69);
-                sameLine = false;
-            }
-            
-            numbers.push_back(*(const int*)payload->Data);
-        }
-        else
-        {
-            ImGui::Text("new number hovering");
-            previewButton = true;
-        }
-        ImGui::EndDragDropTarget();
-    }
-    
-    ImGui::Text("Cursor Pos: %f, %f", cursorPos.x, cursorPos.y);
-    ImGui::Text("Mouse Pos: %f, %f", mousePos.x, mousePos.y);
-    ImGui::Text("Same Line: %s", sameLine ? "true" : "false");
     
     ImGui::End();
 }
