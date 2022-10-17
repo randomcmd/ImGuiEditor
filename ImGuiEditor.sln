@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGuiEditor", "ImGuiEditor\ImGuiEditor.vcxproj", "{FC28D544-D059-47D2-9ABF-48B3FE86B19C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Debug|Win32.Build.0 = Debug|Win32
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Debug|x64.ActiveCfg = Debug|x64
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Debug|x64.Build.0 = Debug|x64
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Release|Win32.ActiveCfg = Release|Win32
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Release|Win32.Build.0 = Release|Win32
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Release|x64.ActiveCfg = Release|x64
+		{FC28D544-D059-47D2-9ABF-48B3FE86B19C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal
