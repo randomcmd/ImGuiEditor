@@ -154,11 +154,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CanvasData.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ImGuiEditor.cpp" />
+    <ClCompile Include="ImGuiExtension.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CanvasData.h" />
     <ClInclude Include="Editor.h" />
+    <ClInclude Include="ImGuiExtension.h" />
     <ClInclude Include="ImGuiStructs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

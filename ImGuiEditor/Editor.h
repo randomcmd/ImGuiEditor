@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include <imgui.h>
-#include <vector>
+#include "CanvasData.h"
 
 namespace ImStructs
 {
@@ -11,4 +10,5 @@ namespace ReMi
 {
     void EditorWindow();
     void Canvas();
+    //CanvasContainer canvas;
 }
