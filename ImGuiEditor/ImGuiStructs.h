@@ -10,8 +10,16 @@ namespace ImStructs {
         std::string label = "default";
         bool clicked;
         bool deleteComponent;
+
+        float width;
         
-        virtual void Draw() = 0;
+        virtual void Draw()
+        {
+            if(width != 0.0f) {
+                ImGui::SetNextItemWidth(width);
+            }
+        }
+        
         virtual void Editor()
         {
             ImGui::TextUnformatted(label.c_str());
@@ -27,15 +35,21 @@ namespace ImStructs {
             {
                 label = "default";
             }
+            ImGui::DragFloat("Width", &width, 0, 500);
+            if(ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Width (only on some components) using ImGui::SetNextItemWidth(width)");
+            }
         }
     };
     
     struct Text : ImStruct
     {
-        std::string text;
+        std::string text = "Hello, world!";
 
         void Draw() override
         {
+            ImStruct::Draw();
             ImGui::TextUnformatted(text.c_str());
         }
 
@@ -52,6 +66,7 @@ namespace ImStructs {
 
         void Draw() override
         {
+            ImStruct::Draw();
             ImGui::Button(label.c_str(), size);
         }
 
@@ -71,6 +86,7 @@ namespace ImStructs {
 
         void Draw() override
         {
+            ImStruct::Draw();
             ImGui::InputText(label.c_str(), &buf, flags, callback, user_data);
         }
 
