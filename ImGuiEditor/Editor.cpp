@@ -54,9 +54,10 @@ void ReMi::EditorWindow()
     }
 
     bool showingEditor = false;
-    for (auto component : canvas.m_ImStructs)
+    for (size_t i = 0; i<canvas.m_ImStructs.size(); i++)
     {
-        if(component->clicked)
+        auto component = canvas.m_ImStructs[i];
+        if(component->canvasFlags & ImStructs::CanvasFlags_Clicked)
         {
             ImGui::Separator();
             ImGui::PushID(component);
@@ -64,7 +65,7 @@ void ReMi::EditorWindow()
             ImGui::PopID();
             showingEditor = true;
         }
-        if(component->deleteComponent)
+        if(component->canvasFlags & ImStructs::CanvasFlags_Delete)
         {
             canvas.m_ImStructs.erase(std::remove(canvas.m_ImStructs.begin(), canvas.m_ImStructs.end(), component), canvas.m_ImStructs.end());
             delete component;
@@ -81,6 +82,11 @@ void ReMi::EditorWindow()
     {
         ImGui::ShowDemoWindow(&demo);
     }
+
+    if(ImGui::Button("Compile"))
+    {
+        canvas.CompileCPP();
+    }
     
     // can i anchor a buttom to the bottom of the window? a: no q: WAIT WHAT? a: yes, but you have to do it manually
     //ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 35); // remi you just didn't put it in the right function smh you put it in the slider editor or something LMAO
@@ -96,23 +102,33 @@ void ReMi::Canvas()
 {
     ImGui::Begin("Canvas");
 
-    if(canvas.m_ImStructs.empty())
-    {
+    if(canvas.m_ImStructs.empty()) {
         if(CanvasDropTarget())
         {
             AddDropTargetToCanvas(0);
-        };
+        }
     }
     
     // iterate through all the structs and draw them
     for(size_t i = 0; i < canvas.m_ImStructs.size(); i++)
     {
+        if(CanvasDropTarget())
+        {
+            AddDropTargetToCanvas(0);
+        }
         auto component = canvas.m_ImStructs.at(i); 
         ImGui::PushID(component);
         component->Draw();
         ImGui::PopID();
         if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
-        if(ImGui::IsItemClicked()) component->clicked = true;
+        if(ImGui::IsItemClicked()) component->canvasFlags |= ImStructs::CanvasFlags_Clicked;
+        if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+        {
+            std::string payload = "Hello Sannej!";
+            ImGui::SetDragDropPayload("move component", &i, sizeof(i));
+            ImGui::SetTooltip("movingg component %s", component->label.c_str());
+            ImGui::EndDragDropSource();
+        }
         if(CanvasDropTarget())
         {
             AddDropTargetToCanvas(i + 1);
@@ -150,5 +166,22 @@ void ReMi::AddDropTargetToCanvas(size_t i)
         }
         auto iterator = canvas.m_ImStructs.begin() + static_cast<long long>(i);
         canvas.m_ImStructs.insert(iterator, component);
+        printf("test");
+    }
+    if(auto payload = ImGui::AcceptDragDropPayload("move component"))
+    {
+        // relocate old component
+        auto componentIndex = *static_cast<size_t*>(payload->Data);
+        auto component = canvas.m_ImStructs.at(componentIndex);
+        auto it = canvas.m_ImStructs.begin() + i;
+
+        if(componentIndex > i) // if we move it back
+        {
+            //it++;
+            componentIndex++;
+        }
+        
+        canvas.m_ImStructs.insert(it, component);
+        canvas.m_ImStructs.erase(canvas.m_ImStructs.begin() + componentIndex);
     }
 }
