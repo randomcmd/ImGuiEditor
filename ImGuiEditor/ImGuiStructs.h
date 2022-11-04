@@ -5,22 +5,21 @@
 
 namespace ImStructs {
 
-    typedef int CanvasFlags;
-    auto const CanvasFlags_None = 0;
-    auto const CanvasFlags_Clicked = 1 << 0;
-    auto const CanvasFlags_Delete = 1 << 1;
-    auto const CanvasFlags_MoveUp = 1 << 2;
-    auto const CanvasFlags_MoveDown = 1 << 3;
-    
     struct ImStruct
     {
-        ImStruct() = default;
-        virtual ~ImStruct() = default;
-        
         std::string label = "default";
-        CanvasFlags canvasFlags = CanvasFlags_None;
+        bool clicked;
+        bool deleteComponent;
+
+        float width;
         
-        virtual void Draw() = 0;
+        virtual void Draw()
+        {
+            if(width != 0.0f) {
+                ImGui::SetNextItemWidth(width);
+            }
+        }
+        
         virtual void Editor()
         {
             ImGui::TextUnformatted(label.c_str());
@@ -28,26 +27,29 @@ namespace ImStructs {
             ImGui::SameLine();
             if(ImGui::Button("X"))
             {
-                canvasFlags &= ~CanvasFlags_Clicked;
+                clicked = false;
             }
             ImGui::SameLine();
-            if(ImGui::Button("DELETE"))
-            {
-                canvasFlags |= CanvasFlags_Delete;
-            }
+            deleteComponent = ImGui::Button("DELETE");
             if(label.length() == 0)
             {
                 label = "default";
+            }
+            ImGui::DragFloat("Width", &width, 0, 500);
+            if(ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Width (only on some components) using ImGui::SetNextItemWidth(width)");
             }
         }
     };
     
     struct Text : ImStruct
     {
-        std::string text;
+        std::string text = "Hello, world!";
 
         void Draw() override
         {
+            ImStruct::Draw();
             ImGui::TextUnformatted(text.c_str());
         }
 
@@ -64,6 +66,7 @@ namespace ImStructs {
 
         void Draw() override
         {
+            ImStruct::Draw();
             ImGui::Button(label.c_str(), size);
         }
 
@@ -83,6 +86,7 @@ namespace ImStructs {
 
         void Draw() override
         {
+            ImStruct::Draw();
             ImGui::InputText(label.c_str(), &buf, flags, callback, user_data);
         }
 
