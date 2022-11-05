@@ -5,11 +5,20 @@
 
 namespace ImStructs {
 
+    typedef int CanvasFlags;
+    auto const CanvasFlags_None = 0;
+    auto const CanvasFlags_Clicked = 1 << 0;
+    auto const CanvasFlags_Delete = 1 << 1;
+    auto const CanvasFlags_MoveUp = 1 << 2;
+    auto const CanvasFlags_MoveDown = 1 << 3;
+    
     struct ImStruct
     {
+        ImStruct() = default;
+        virtual ~ImStruct() = default;
+        
         std::string label = "default";
-        bool clicked;
-        bool deleteComponent;
+        CanvasFlags canvasFlags = CanvasFlags_None;
         
         virtual void Draw() = 0;
         virtual void Editor()
@@ -19,10 +28,13 @@ namespace ImStructs {
             ImGui::SameLine();
             if(ImGui::Button("X"))
             {
-                clicked = false;
+                canvasFlags &= ~CanvasFlags_Clicked;
             }
             ImGui::SameLine();
-            deleteComponent = ImGui::Button("DELETE");
+            if(ImGui::Button("DELETE"))
+            {
+                canvasFlags |= CanvasFlags_Delete;
+            }
             if(label.length() == 0)
             {
                 label = "default";

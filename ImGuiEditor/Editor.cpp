@@ -1,6 +1,7 @@
 ﻿#include "Editor.h"
 #include <string>
 #include <vector>
+
 #include "ImGuiStructs.h"
 CanvasContainer canvas;
 
@@ -32,15 +33,15 @@ void ReMi::EditorWindow()
     bool showingEditor = false;
     for (auto component : canvas.m_ImStructs)
     {
-        if(component->clicked)
+        if(component->canvasFlags & ImStructs::CanvasFlags_Clicked)
         {
             ImGui::Separator();
             ImGui::PushID(component);
             component->Editor();
-            ImGui::PopID();
+            ImGui::PopID(); 
             showingEditor = true;
         }
-        if(component->deleteComponent)
+        if(component->canvasFlags & ImStructs::CanvasFlags_Delete)
         {
             canvas.m_ImStructs.erase(std::remove(canvas.m_ImStructs.begin(), canvas.m_ImStructs.end(), component), canvas.m_ImStructs.end());
             delete component;
@@ -79,7 +80,7 @@ void ReMi::Canvas()
         component->Draw();
         ImGui::PopID();
         if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
-        if(ImGui::IsItemClicked()) component->clicked = true;
+        if(ImGui::IsItemClicked()) component->canvasFlags |= ImStructs::CanvasFlags_Clicked;
     }
     
     ImGui::End();
