@@ -1,6 +1,5 @@
 // glfw define 
 #define GLFW_INCLUDE_NONE
-#include <cstdlib>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
@@ -29,12 +28,14 @@ int main()
 
     // Setup ImGui binding
     ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
-
+    
     // enable dockspace
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 460");
     
     // Setup style
     ImGui::StyleColorsDark();
@@ -58,6 +59,13 @@ int main()
         ReMi::EditorWindow();
         ReMi::Canvas();
         ImGui::Render();
+        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            auto glfwContext = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(glfwContext);
+        }
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     } // why isn't this working? Answer: I forgot to call glfwSwapBuffers

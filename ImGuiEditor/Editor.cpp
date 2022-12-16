@@ -1,58 +1,86 @@
 ﻿#include "Editor.h"
-
+#include <functional>
 #include <imgui.h>
 #include <string>
 #include <vector>
+#include "ImGradient.h"
 #include "ImGuiStructs.h"
-CanvasContainer canvas;
+
+#define PREVIEW_LAST_COMPILE 1 // This is a temporary hack to import the compiled.cpp file
+
+#if PREVIEW_LAST_COMPILE
+#include "compiled.h"
+#endif
+
+CanvasContainer canvas; // TODO(faraway): Have different editor windows have different canvases and states for editing of multiple guis at the same time
+
+using ImStructs::ImStruct;
+using ImGuiComponentFactory = std::function<ImStruct*()>;
+
+void ComponentButton(std::string_view label, const ImGuiComponentFactory* factory)
+{
+    if(ImGui::Button(label.data()))
+    {
+        canvas.m_ImStructs.push_back(factory->operator()());
+    }
+
+    if(ImGui::BeginDragDropSource())
+    {
+        ImGui::SetDragDropPayload("component", factory, sizeof(ImGuiComponentFactory));
+        ImGui::SetTooltip("Adding %s", label.data());
+        ImGui::EndDragDropSource();
+    }
+}
 
 void ReMi::EditorWindow()
 {
     ImGui::Begin("Hello, world!");
-    
-    if(ImGui::Button("Add random text"))
-    {
-        canvas.m_ImStructs.push_back(new ImStructs::Text());
-    }
 
-    if(ImGui::BeginDragDropSource())
-    {
-        std::string payload = "Hello Sannej!";
-        ImGui::SetDragDropPayload("component", new int(0), sizeof(int));
-        ImGui::SetTooltip("addingg component");
-        ImGui::EndDragDropSource();
-    }
+    ComponentButton("Add random text",
+    new ImGuiComponentFactory([]() {
+        return new ImStructs::Text();
+    }));
     
-    if(ImGui::Button("Add random button"))
-    {
-        auto buttonData = new ImStructs::Button();
+    ComponentButton("Add random button",
+    new ImGuiComponentFactory([](){
+        const auto buttonData = new ImStructs::Button();
         buttonData->label = "hej button";
-        canvas.m_ImStructs.push_back(buttonData);
-    }
+        return buttonData;
+    }));
 
-    if(ImGui::BeginDragDropSource())
-    {
-        std::string payload = "Hello Sannej!";
-        ImGui::SetDragDropPayload("component", new int(1), sizeof(int));
-        ImGui::SetTooltip("addingg component");
-        ImGui::EndDragDropSource();
-    }
-    
-    if(ImGui::Button("Add random input"))
-    {
-        auto inputTextData = new ImStructs::InputText();
+    ComponentButton("Add random input",
+    new ImGuiComponentFactory([](){
+        const auto inputTextData = new ImStructs::InputText();
         inputTextData->label = "hej user input";
-        canvas.m_ImStructs.push_back(inputTextData);
-    }
+        return inputTextData;
+    }));
 
-    if(ImGui::BeginDragDropSource())
+    ComponentButton("experimental component wrapper for text",
+    new ImGuiComponentFactory([]()
     {
-        std::string payload = "Hello Sannej!";
-        ImGui::SetDragDropPayload("component", new int(2), sizeof(int));
-        ImGui::SetTooltip("addingg component");
-        ImGui::EndDragDropSource();
-    }
+        return ImStructs::make_component_wrapper(&ImGui::TextUnformatted, (const char*) "Hello, world!", nullptr);
+    }));
+     
+    ComponentButton("experimental component wrapper for input text",
+    new ImGuiComponentFactory([]()
+    {
+        bool (*InputText)(const char*, std::string*, ImGuiInputTextFlags, ImGuiInputTextCallback, void*) = ImGui::InputText;
+        return ImStructs::make_component_wrapper(std::function(InputText), (const char*) "Input Text In Me", (std::string*) new std::string("Buffer"), (ImGuiInputTextFlags)0, (ImGuiInputTextCallback)0, (void*)0);
+    }));
 
+    ComponentButton("experimental component wrapper for float slider",
+    new ImGuiComponentFactory([]()
+    {
+        bool (*SliderFloat)(const char*, float*, float, float, const char*, float) = ImGui::SliderFloat;
+        return ImStructs::make_component_wrapper(std::function(SliderFloat), (const char*) "Slider Float In Me", (float*) new float(0.0f), (float)0.0f, (float)1.0f, (const char*) new char[16] {0}, (float)1.0f);
+    }));
+
+    ComponentButton("experimental component wrapper for Gradient Button V1",
+    new const ImGuiComponentFactory([](){
+        bool (*ColoredButton)(const char*, const ImVec2&, unsigned int, unsigned int, unsigned int) = ImGui::ColoredButtonV1;
+        return ImStructs::make_component_wrapper(std::function(ColoredButton), (const char*) "Gradient Button V1", (ImVec2&) *new ImVec2(100, 25), *new ImColor(1.0f, 1.0f, 1.0f, 1.0f), *new ImColor(0xA020F0FF), *new ImColor(0x296d98FF));
+    }));
+    
     bool showingEditor = false;
     for (size_t i = 0; i<canvas.m_ImStructs.size(); i++)
     {
@@ -67,7 +95,7 @@ void ReMi::EditorWindow()
         }
         if(component->canvasFlags & ImStructs::CanvasFlags_Delete)
         {
-            canvas.m_ImStructs.erase(std::remove(canvas.m_ImStructs.begin(), canvas.m_ImStructs.end(), component), canvas.m_ImStructs.end());
+            std::erase(canvas.m_ImStructs, component);
             delete component;
         }
     }
@@ -94,6 +122,17 @@ void ReMi::EditorWindow()
 
     // how would i make that the button is anchored to the right side of the screen? a: you can't, you have to do it manually
     //ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 80); // remi you just didn't put it in the right function smh you put it in the slider editor or something LMAO
+
+    #if PREVIEW_LAST_COMPILE
+    static bool previewLastCompile = true;
+    ImGui::SameLine();
+    ImGui::Checkbox("Preview last compile", &previewLastCompile);
+    if(previewLastCompile) {
+        ImGui::Begin("Preview Last Compile");
+        Gui();
+        ImGui::End();
+    }
+#endif
     
     ImGui::End();
 }
@@ -116,7 +155,7 @@ void ReMi::Canvas()
         {
             AddDropTargetToCanvas(0);
         }
-        auto component = canvas.m_ImStructs.at(i); 
+        const auto component = canvas.m_ImStructs.at(i); 
         ImGui::PushID(component);
         component->Draw();
         ImGui::PopID();
@@ -140,8 +179,8 @@ void ReMi::Canvas()
 
 bool ReMi::CanvasDropTarget()
 {
-    auto mouseCursorPos = ImGui::GetMousePos();
-    auto cursorPos = ImGui::GetCursorScreenPos();
+    const auto mouseCursorPos = ImGui::GetMousePos();
+    const auto cursorPos = ImGui::GetCursorScreenPos();
     if(abs(mouseCursorPos.y - cursorPos.y) > 10) return false;
     if(ImGui::GetDragDropPayload() == nullptr) return false;
     ImGui::BeginChild("addcomponent", ImVec2(100, 10));
@@ -156,24 +195,18 @@ bool ReMi::CanvasDropTarget()
 
 void ReMi::AddDropTargetToCanvas(size_t i)
 {
-    if(auto payload = ImGui::AcceptDragDropPayload("component")) {
-        ImStructs::ImStruct* component;
-        switch(*(int*)payload->Data)
-        {
-        case 0: component = new ImStructs::Text(); break;
-        case 1: component = new ImStructs::Button(); break;
-        default: component = new ImStructs::InputText();
-        }
-        auto iterator = canvas.m_ImStructs.begin() + static_cast<long long>(i);
+    if(const auto payload = ImGui::AcceptDragDropPayload("component")) {
+        const auto construct = *static_cast<ImGuiComponentFactory*>(payload->Data);
+        ImStructs::ImStruct* component = construct();
+        const auto iterator = canvas.m_ImStructs.begin() + static_cast<long long>(i);
         canvas.m_ImStructs.insert(iterator, component);
-        printf("test");
     }
-    if(auto payload = ImGui::AcceptDragDropPayload("move component"))
+    if(const auto payload = ImGui::AcceptDragDropPayload("move component"))
     {
         // relocate old component
         auto componentIndex = *static_cast<size_t*>(payload->Data);
-        auto component = canvas.m_ImStructs.at(componentIndex);
-        auto it = canvas.m_ImStructs.begin() + i;
+        const auto component = canvas.m_ImStructs.at(componentIndex);
+        const auto it = canvas.m_ImStructs.begin() + i;
 
         if(componentIndex > i) // if we move it back
         {

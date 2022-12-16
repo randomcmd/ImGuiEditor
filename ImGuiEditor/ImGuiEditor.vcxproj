@@ -159,13 +159,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CanvasData.cpp" />
+    <ClCompile Include="compiled.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ImGuiEditor.cpp" />
     <ClCompile Include="ImGuiExtension.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CanvasData.h" />
+    <ClInclude Include="compiled.h" />
     <ClInclude Include="Editor.h" />
+    <ClInclude Include="ImGradient.h" />
     <ClInclude Include="ImGuiExtension.h" />
     <ClInclude Include="ImGuiStructs.h" />
   </ItemGroup>

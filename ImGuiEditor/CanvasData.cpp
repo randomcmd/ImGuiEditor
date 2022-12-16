@@ -8,6 +8,9 @@ void CanvasContainer::CompileCPP()
     std::ofstream file;
     file.open("compiled.cpp");
 
+    file << "#include <imgui.h>" << std::endl;
+    file << "#include <imgui_stdlib.h>" << std::endl << std::endl; 
+
     file << "void Gui() {" << std::endl;
     
     // iterate through the canvas
