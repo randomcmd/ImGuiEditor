@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="CanvasData.cpp" />
     <ClCompile Include="compiled.cpp" />
+    <ClInclude Include="ComponentWrapper.h" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ImGuiEditor.cpp" />
     <ClCompile Include="ImGuiExtension.cpp" />

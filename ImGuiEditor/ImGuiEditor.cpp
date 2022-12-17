@@ -40,8 +40,8 @@ int main()
     // Setup style
     ImGui::StyleColorsDark();
     
-    static glm::vec3 clearColor = {0.69f, 0.42f, 0.96f};
-    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+    static glm::vec3 clear_color = {0.69f, 0.42f, 0.96f};
+    glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
     
     // Main loop
     while(!glfwWindowShouldClose(window))

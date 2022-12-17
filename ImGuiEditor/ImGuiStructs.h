@@ -2,7 +2,6 @@
 #include <imgui.h>
 #include <string>
 #include <imgui_stdlib.h>
-#include <iostream>
 #include <ostream>
 
 #include "ImGuiExtension.h"
@@ -151,131 +150,63 @@ namespace ImStructs {
     };
     
     template <typename T>
-    void EditorHelper(T not_implemented_type)
+    void EditorHelper(std::string_view label, T)
     {
         ImGui::Button("Type Not Implemented!");
         // add hover tooltip with type name
-        auto type = typeid(not_implemented_type).name();
+        auto type = typeid(T).name();
         if(ImGui::IsItemHovered())
         {
-            ImGui::SetTooltip(type);
+            auto tooltip = std::string(type) + " " + std::string(label);
+            ImGui::SetTooltip(tooltip.c_str());
         }
     }
 
-    template <>
-    inline void EditorHelper(int** pointer)
+    template <> 
+    inline void EditorHelper(std::string_view label, int** pointer)
     {
         ImGui::PushID(pointer);
-        ImGui::InputInt("Value", *pointer);
+        ImGui::InputInt(label.data(), *pointer);
         ImGui::PopID();
     }
     
     template <>
-    inline void EditorHelper(float** pointer)
+    inline void EditorHelper(std::string_view label, float** pointer)
     {
         ImGui::PushID(pointer);
-        ImGui::InputFloat("Value", *pointer);
+        ImGui::InputFloat(label.data(), *pointer);
         ImGui::PopID();
     }
     
     template <>
-    inline void EditorHelper(std::string** pointer)
+    inline void EditorHelper(std::string_view label, std::string** pointer)
     {
         ImGui::PushID(pointer);
-        ImGui::InputText("Value", *pointer);
+        ImGui::InputText(label.data(), *pointer);
         ImGui::PopID();
     }
     
     template <>
-    inline void EditorHelper(const char** pointer)
+    inline void EditorHelper(std::string_view label, const char** pointer)
     {
         ImGui::PushID(pointer);
-        ImGui::InputText("Const String Value", (char*) *pointer, 256, ImGuiInputTextFlags_ReadOnly); // ImGuiInputTextFlags_ReadOnly assures const is not violated
+        ImGui::InputText(label.data(), (char*) *pointer, 256, ImGuiInputTextFlags_ReadOnly); // ImGuiInputTextFlags_ReadOnly assures const is not violated  // NOLINT(clang-diagnostic-cast-qual)
         ImGui::PopID();
     }
     
     template <>
-    inline void EditorHelper(ImVec2* pointer)
+    inline void EditorHelper(std::string_view label, ImVec2* pointer)
     {
         ImGui::PushID(pointer);
-        ImGui::DragFloat2("Value", (float*)pointer);
+        ImGui::DragFloat2(label.data(), (float*)pointer);
         ImGui::PopID();
     }
     
     template <>
-    inline void EditorHelper(ImColor* pointer)
+    inline void EditorHelper(std::string_view label, ImColor* pointer)
     {
         ImGui::PushID(pointer);
-        ImGui::ColorEdit4("ImColor", (float*)pointer);
+        ImGui::ColorEdit4(label.data(), (float*)pointer);
         ImGui::PopID();
-    }
-    
-    template <typename F, typename... Args>
-    class ComponentWrapper : public ImStruct
-    {
-    public:
-        ComponentWrapper(F&& f, Args&&... args) : m_f(std::forward<F>(f)), m_args(std::forward<Args>(args)...)
-        {
-            // if the first argument is a c string, use it as the label
-            // since the label is actually defined in ImStruct we point the first argument to the label
-            // this is a bit hacky but it works (thanks copilot)
-            if constexpr (std::is_same_v<const char*, std::decay_t<decltype(std::get<0>(m_args))>>) {
-                std::get<0>(m_args) = fallBackLabel;
-            }
-        }
-
-        void Draw() override
-        {
-            ImStruct::Draw();
-            if constexpr (std::is_same_v<const char*, std::decay_t<decltype(std::get<0>(m_args))>>) {
-                if(fallBackLabel)
-                {
-                    std::get<0>(m_args) = fallBackLabel;
-                }
-            }
-            std::apply(m_f, m_args);
-        }
-
-        int apply()
-        {
-            return std::apply(m_f, m_args);
-        }
-
-        // print all the arguments and their types
-        void Editor() override
-        {
-            ImStruct::Editor();
-
-            // print all the arguments and their types
-            std::apply([](auto&&... args) {
-                (EditorHelper(&args), ...);
-            }, m_args);
-
-            using result_type = std::invoke_result_t<F, Args...>;
-            // if result type is bool then create that as a button
-            if constexpr (std::is_same_v<bool, result_type>) {
-                ImGui::Button("Conditional Component");
-            }
-        }
-
-        // write a destructor
-        ~ComponentWrapper() override
-        {
-            ImStruct::~ImStruct();
-            // call the destructors of the elements in the tuple
-            std::apply([](auto&&... args) {
-                (std::destroy_at(&args), ...);
-            }, m_args);
-        }
-
-    private:
-        F m_f;
-        std::tuple<Args...> m_args;
-    };
-
-    template <typename F, typename... Args>
-    ComponentWrapper<F, Args...>* make_component_wrapper(F&& f, Args&&... args)
-    {
-        return new ComponentWrapper<F, Args...>{std::forward<F>(f), std::forward<Args>(args)...};
     }
 }

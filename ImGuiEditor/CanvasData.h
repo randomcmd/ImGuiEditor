@@ -6,7 +6,7 @@
 class CanvasContainer
 {
 public:
-    std::vector<ImStructs::ImStruct*> m_ImStructs;
+    std::vector<ImStructs::ImStruct*> ImStructs;
 
-    void CompileCPP();
+    void CompileCPP() const;
 };

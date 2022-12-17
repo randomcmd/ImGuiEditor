@@ -5,6 +5,7 @@
 #include <vector>
 #include "ImGradient.h"
 #include "ImGuiStructs.h"
+#include "ComponentWrapper.h"
 
 #define PREVIEW_LAST_COMPILE 1 // This is a temporary hack to import the compiled.cpp file
 
@@ -21,7 +22,7 @@ void ComponentButton(std::string_view label, const ImGuiComponentFactory* factor
 {
     if(ImGui::Button(label.data()))
     {
-        canvas.m_ImStructs.push_back(factory->operator()());
+        canvas.ImStructs.push_back(factory->operator()());
     }
 
     if(ImGui::BeginDragDropSource())
@@ -30,6 +31,11 @@ void ComponentButton(std::string_view label, const ImGuiComponentFactory* factor
         ImGui::SetTooltip("Adding %s", label.data());
         ImGui::EndDragDropSource();
     }
+}
+
+int add(int a, int b)
+{
+    return a + b;
 }
 
 void ReMi::EditorWindow()
@@ -55,36 +61,62 @@ void ReMi::EditorWindow()
         return inputTextData;
     }));
 
-    ComponentButton("experimental component wrapper for text",
+    ComponentButton("just for compilation",
+    new ImGuiComponentFactory([](){
+        auto component = ImStructs::make_component_wrapper(&add, 1, 2);
+        component->Name = "add";
+        component->FunctionName = "add";
+        component->ArgumentNames = {"a", "b"};
+        component->canvasFlags = ImStructs::CanvasFlags_Clicked;
+        return component;
+    }));
+    
+    ComponentButton("Add text (ComponentWrapper)",
     new ImGuiComponentFactory([]()
     {
-        return ImStructs::make_component_wrapper(&ImGui::TextUnformatted, (const char*) "Hello, world!", nullptr);
+        auto text = ImStructs::make_component_wrapper(&ImGui::TextUnformatted, (const char*) "Hello, world!", nullptr);
+        text->Name = "Text";
+        text->FunctionName = "ImGui::TextUnformatted";
+        text->ArgumentNames = {"text", "text_end"};
+        return text;
     }));
      
-    ComponentButton("experimental component wrapper for input text",
+    ComponentButton("Add input text (ComponentWrapper)",
     new ImGuiComponentFactory([]()
     {
         bool (*InputText)(const char*, std::string*, ImGuiInputTextFlags, ImGuiInputTextCallback, void*) = ImGui::InputText;
-        return ImStructs::make_component_wrapper(std::function(InputText), (const char*) "Input Text In Me", (std::string*) new std::string("Buffer"), (ImGuiInputTextFlags)0, (ImGuiInputTextCallback)0, (void*)0);
+        const auto input_text = ImStructs::make_component_wrapper(std::function(InputText), (const char*) "Input Text In Me", (std::string*) new std::string("Buffer"), (ImGuiInputTextFlags)0, (ImGuiInputTextCallback)0, (void*)0);
+        input_text->Name = "Input Text";
+        input_text->FunctionName = "ImGui::InputText";
+        input_text->ArgumentNames = {"Label", "Buf", "Flags", "Callback", "User_data"};
+        return input_text;
     }));
 
-    ComponentButton("experimental component wrapper for float slider",
+    ComponentButton("Add float slider (ComponentWrapper)",
     new ImGuiComponentFactory([]()
     {
         bool (*SliderFloat)(const char*, float*, float, float, const char*, float) = ImGui::SliderFloat;
-        return ImStructs::make_component_wrapper(std::function(SliderFloat), (const char*) "Slider Float In Me", (float*) new float(0.0f), (float)0.0f, (float)1.0f, (const char*) new char[16] {0}, (float)1.0f);
+        const auto slider_float = ImStructs::make_component_wrapper(std::function(SliderFloat), (const char*) "Slider Float In Me", (float*) new float(0.0f), (float)0.0f, (float)1.0f, (const char*) new char[16] {0}, (float)1.0f);
+        slider_float->Name = "Slider Float";
+        slider_float->FunctionName = "ImGui::SliderFloat";
+        slider_float->ArgumentNames = {"Label", "V", "V_min", "V_max", "Format", "Power"};
+        return slider_float;
     }));
 
-    ComponentButton("experimental component wrapper for Gradient Button V1",
+    ComponentButton("Add Gradient Button V1 (ComponentWrapper)",
     new const ImGuiComponentFactory([](){
         bool (*ColoredButton)(const char*, const ImVec2&, unsigned int, unsigned int, unsigned int) = ImGui::ColoredButtonV1;
-        return ImStructs::make_component_wrapper(std::function(ColoredButton), (const char*) "Gradient Button V1", (ImVec2&) *new ImVec2(100, 25), *new ImColor(1.0f, 1.0f, 1.0f, 1.0f), *new ImColor(0xA020F0FF), *new ImColor(0x296d98FF));
+        auto colored_button = ImStructs::make_component_wrapper(std::function(ColoredButton), (const char*) "Gradient Button V1", (ImVec2&) *new ImVec2(0, 0), *new ImColor(1.0f, 1.0f, 1.0f, 1.0f), *new ImColor(0xA020F0FF), *new ImColor(0x296d98FF));
+        colored_button->Name = "Gradient Button V1";
+        colored_button->FunctionName = "ImGui::ColoredButtonV1";
+        colored_button->ArgumentNames = {"Label", "Size", "Color", "ColorHovered", "ColorActive"};
+        return colored_button;
     }));
     
     bool showingEditor = false;
-    for (size_t i = 0; i<canvas.m_ImStructs.size(); i++)
+    for (size_t i = 0; i<canvas.ImStructs.size(); i++)
     {
-        auto component = canvas.m_ImStructs[i];
+        auto component = canvas.ImStructs[i];
         if(component->canvasFlags & ImStructs::CanvasFlags_Clicked)
         {
             ImGui::Separator();
@@ -95,7 +127,7 @@ void ReMi::EditorWindow()
         }
         if(component->canvasFlags & ImStructs::CanvasFlags_Delete)
         {
-            std::erase(canvas.m_ImStructs, component);
+            std::erase(canvas.ImStructs, component);
             delete component;
         }
     }
@@ -124,7 +156,7 @@ void ReMi::EditorWindow()
     //ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 80); // remi you just didn't put it in the right function smh you put it in the slider editor or something LMAO
 
     #if PREVIEW_LAST_COMPILE
-    static bool previewLastCompile = true;
+    static bool previewLastCompile = false;
     ImGui::SameLine();
     ImGui::Checkbox("Preview last compile", &previewLastCompile);
     if(previewLastCompile) {
@@ -132,7 +164,10 @@ void ReMi::EditorWindow()
         Gui();
         ImGui::End();
     }
-#endif
+    #else
+    ImGui::SameLine();
+    ImGui::Text("Preview last compile is disabled");
+    #endif
     
     ImGui::End();
 }
@@ -141,7 +176,7 @@ void ReMi::Canvas()
 {
     ImGui::Begin("Canvas");
 
-    if(canvas.m_ImStructs.empty()) {
+    if(canvas.ImStructs.empty()) {
         if(CanvasDropTarget())
         {
             AddDropTargetToCanvas(0);
@@ -149,13 +184,13 @@ void ReMi::Canvas()
     }
     
     // iterate through all the structs and draw them
-    for(size_t i = 0; i < canvas.m_ImStructs.size(); i++)
+    for(size_t i = 0; i < canvas.ImStructs.size(); i++)
     {
         if(CanvasDropTarget())
         {
             AddDropTargetToCanvas(0);
         }
-        const auto component = canvas.m_ImStructs.at(i); 
+        const auto component = canvas.ImStructs.at(i); 
         ImGui::PushID(component);
         component->Draw();
         ImGui::PopID();
@@ -198,15 +233,15 @@ void ReMi::AddDropTargetToCanvas(size_t i)
     if(const auto payload = ImGui::AcceptDragDropPayload("component")) {
         const auto construct = *static_cast<ImGuiComponentFactory*>(payload->Data);
         ImStructs::ImStruct* component = construct();
-        const auto iterator = canvas.m_ImStructs.begin() + static_cast<long long>(i);
-        canvas.m_ImStructs.insert(iterator, component);
+        const auto iterator = canvas.ImStructs.begin() + static_cast<long long>(i);
+        canvas.ImStructs.insert(iterator, component);
     }
     if(const auto payload = ImGui::AcceptDragDropPayload("move component"))
     {
         // relocate old component
         auto componentIndex = *static_cast<size_t*>(payload->Data);
-        const auto component = canvas.m_ImStructs.at(componentIndex);
-        const auto it = canvas.m_ImStructs.begin() + i;
+        const auto component = canvas.ImStructs.at(componentIndex);
+        const auto it = canvas.ImStructs.begin() + i;
 
         if(componentIndex > i) // if we move it back
         {
@@ -214,7 +249,7 @@ void ReMi::AddDropTargetToCanvas(size_t i)
             componentIndex++;
         }
         
-        canvas.m_ImStructs.insert(it, component);
-        canvas.m_ImStructs.erase(canvas.m_ImStructs.begin() + componentIndex);
+        canvas.ImStructs.insert(it, component);
+        canvas.ImStructs.erase(canvas.ImStructs.begin() + componentIndex);
     }
 }
