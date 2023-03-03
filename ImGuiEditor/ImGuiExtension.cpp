@@ -8,4 +8,5 @@ namespace ImGui
     {
         return InputText(label, text, flags, callback, user_data);
     }
+
 }

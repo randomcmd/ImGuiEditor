@@ -42,6 +42,11 @@ int main()
     
     static glm::vec3 clear_color = {0.69f, 0.42f, 0.96f};
     glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
+
+    ReMi::Editor editor;
+
+    auto default_plugin_path = "DefaultComponents.dll";
+    editor.LoadPlugin(default_plugin_path);
     
     // Main loop
     while(!glfwWindowShouldClose(window))
@@ -56,8 +61,9 @@ int main()
         ImGui::NewFrame();
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dockspace_flags);
-        ReMi::EditorWindow();
-        ReMi::Canvas();
+        
+        editor.Render();
+        
         ImGui::Render();
         if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {

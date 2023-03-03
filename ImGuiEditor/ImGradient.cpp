@@ -1,24 +1,8 @@
 ﻿#pragma once
 
-// Header
-namespace ImGui
-{
-    bool ColoredButtonV1(const char* label, const ImVec2& size, ImU32 text_color, ImU32 bg_color_1, ImU32 bg_color_2);
-}
-
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
-
-// add plus operator for two ImVec2
-inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
-{
-    return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
-}
-
-inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs)
-{
-    return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y);
-}
+#include "ImGuiExtension.h"
 
 // Implementation
 bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImU32 text_color, ImU32 bg_color_1, ImU32 bg_color_2)
