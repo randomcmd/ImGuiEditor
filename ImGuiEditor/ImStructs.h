@@ -39,7 +39,7 @@ namespace ImStructs {
         CanvasFlags CanvasFlags = CanvasFlags_None;
         ComponentFlags ComponentFlags = ComponentFlags_None;
         [[nodiscard]] virtual std::string Serialise() const;
-        virtual void Deserialise(const std::string str);
+        virtual void Deserialise(std::string str);
         virtual std::string Compile();
         virtual ~ImStruct() = default;
     };

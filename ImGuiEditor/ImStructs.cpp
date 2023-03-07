@@ -8,12 +8,15 @@ namespace ImStructs
 {
     std::string ImStruct::Serialise() const
     {
-        return "ImStruct(" + Label + ")";
+        return "ImStruct(\"" + Label + "\")";
     }
 
     void ImStruct::Deserialise(std::string str)
     {
-        Label = str.substr(str.find("("), str.size() - 2);
+        const ImSerialisation::Call call(str);
+        assert(call.Params.size() == 1 && "ImStruct::Deserialise incorrect number of arguments (only takes label)");
+        auto ss = std::stringstream(call.Params[0]);
+        ImDeserialise(ss, Label);
     }
 
     std::string ImStruct::Compile()
@@ -135,6 +138,7 @@ namespace ImStructs
         ImGui::Text("Component Flags %s", std::bitset<8>(ComponentFlags).to_string().c_str());
 
         static std::string serialised = "";
+        /*
         if(ImGui::Button("Serialise (ImStructComponent)"))
         {
             serialised = ImStructComponent::Serialise();
@@ -144,6 +148,7 @@ namespace ImStructs
             ImStructComponent::Deserialise(serialised);
         }
         ImGui::Text("Serialised: %s", serialised.c_str());
+        */
     }
 
     std::string ImStructComponent::Serialise() const

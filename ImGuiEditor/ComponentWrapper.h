@@ -6,7 +6,6 @@
 
 #include "ImStructs.h"
 #include "ImSerialise.h"
-using ImStructs::ImStructComponent;
 
 namespace ImStructs
 {
@@ -107,6 +106,7 @@ namespace ImStructs
                 }, Arguments);
             }
 
+            /*
             static std::string serialised = "";
             if(ImGui::Button("Serialise"))
             {
@@ -117,6 +117,7 @@ namespace ImStructs
                 Deserialise(serialised);
             }
             ImGui::Text("Serialised: %s", serialised.c_str());
+            */
 
             ImGui::PopID();
         }
@@ -168,16 +169,18 @@ namespace ImStructs
         }
         
         void Deserialise(const std::string str) override {
-            std::string params = str.substr(str.find("(") + 1, str.length() - 2);
-            // remove all commas
-            std::erase(params, ',');
+            const ImSerialisation::Call call(str);
+            assert(call.Params.size() == sizeof...(Args) + 1 && "ComponentWrapper initialised with incorrect amount of arguments");
+            ImStructComponent::Deserialise(call.Params[0]);
             std::stringstream ss;
-            ss << params;
-            std::string ImStructComponentSerialised;
-            std::getline(ss, ImStructComponentSerialised, ')');
-            ImStructComponentSerialised += ")";
-            ImStructComponent::Deserialise(ImStructComponentSerialised);
-            std::apply([&ss](auto&... args) { (ImDeserialise(ss, args), ...); }, Arguments);
+            for (size_t i = 1; i < call.Params.size(); i++)
+            {
+                ss << call.Params[i] << " ";
+            }
+            std::apply([&ss](auto&... args)
+            {
+                (ImDeserialise(ss, args), ...);
+            }, Arguments);
             // set first parameter to label if it is a const char* -> this was a quick fix for imstructs not having serialisation yet
             //Label = params.substr(0, params.find(" "));
         }

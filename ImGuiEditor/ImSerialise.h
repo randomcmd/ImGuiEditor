@@ -19,17 +19,60 @@ inline void ImDeserialise(std::stringstream& is, double*& value)                
 inline void ImDeserialise(std::stringstream& is, bool& value)                                 { is >> value; }
 inline void ImDeserialise(std::stringstream& is, bool*& value)                                { is >> *value; }
 inline void ImDeserialise(std::stringstream& is, char*& value)                                { is >> *value; }
-inline void ImDeserialise(std::stringstream& is, const char*& value)                          { std::string new_string; is >> new_string; value = new_string.c_str(); }
-inline void ImDeserialise(std::stringstream& is, std::string& value)                          { is.get(); std::getline(is, value, '\"'); } // TODO: Add option to add escape chars \"
-inline void ImDeserialise(std::stringstream& is, std::string*& value)                         { is.get(); std::getline(is, *value, '\"'); }
-inline void ImDeserialise(std::stringstream& is, ImVec2& value)                               { is >> value.x >> value.y; }
-inline void ImDeserialise(std::stringstream& is, ImVec4& value)                               { is >> value.x >> value.y >> value.z >> value.w; }
-inline void ImDeserialise(std::stringstream& is, ImColor& value)                              { is >> value.Value.x >> value.Value.y >> value.Value.z >> value.Value.w; }
 inline void ImDeserialise(std::stringstream& is, ImU32& value)                                { is >> value; }
 inline void ImDeserialise(std::stringstream& is, nullptr_t& value)                            { value = nullptr; }
 inline void ImDeserialise(std::stringstream& is, ImGuiInputTextCallbackData& value)           { value = ImGuiInputTextCallbackData(); }
 inline void ImDeserialise(std::stringstream& is, ImGuiInputTextCallback& value)               { value = nullptr; }
 inline void ImDeserialise(std::stringstream& is, void*& value)                                { value = nullptr; }
+
+inline std::string* FirstString(std::stringstream& is) // This might leak value but who cares it's only a few bytes
+{
+    const auto new_string = new std::string(is.str());
+    const size_t start = new_string->find_first_of('\"', is.tellg()) + 1;
+    size_t end = std::string::npos;
+    for(size_t i = start; i < new_string->size(); i++)
+    {
+        if(i >= 1 && new_string->at(i) == '\"' && new_string->at(i - 1) != '\\')
+        {
+            end = i;
+            break;
+        }
+    }
+    if(end == std::string::npos)
+    {
+        end = start;
+    }
+    *new_string = new_string->substr(start, end - start);
+    std::erase(*new_string, '\\');
+    is.seekg(end + 1);
+    return new_string;
+}
+
+inline void ImDeserialise(std::stringstream& is, const char*& value)
+{
+    const auto new_string = FirstString(is);
+    value = new_string->c_str();
+}
+inline void ImDeserialise(std::stringstream& is, std::string& value)
+{
+    value = *FirstString(is);
+}
+inline void ImDeserialise(std::stringstream& is, std::string*& value)
+{
+    value = FirstString(is);
+}
+inline void ImDeserialise(std::stringstream& is, ImVec2& value)
+{
+    is >> value.x >> value.y;
+}
+inline void ImDeserialise(std::stringstream& is, ImVec4& value)
+{
+    is >> value.x >> value.y >> value.z >> value.w;
+}
+inline void ImDeserialise(std::stringstream& is, ImColor& value)
+{
+    is >> value.Value.x >> value.Value.y >> value.Value.z >> value.Value.w;
+}
 
 inline void ImSerialise(std::stringstream& os)                                             { }
 inline void ImSerialise(std::stringstream& os, char value)                                 { os << value; }
@@ -43,7 +86,7 @@ inline void ImSerialise(std::stringstream& os, double* value)                   
 inline void ImSerialise(std::stringstream& os, bool value)                                 { os << value; }
 inline void ImSerialise(std::stringstream& os, bool* value)                                { os << *value; }
 inline void ImSerialise(std::stringstream& os, char* value)                                { os << *value; }
-inline void ImSerialise(std::stringstream& os, const char* value)                          { std::string new_string = value; os << value; }
+inline void ImSerialise(std::stringstream& os, const char* value)                          { std::string new_string = value; os << '\"' << value << '\"'; } // TODO: Add escape characters
 inline void ImSerialise(std::stringstream& os, std::string value)                          { os << "\""<< value << "\""; }
 inline void ImSerialise(std::stringstream& os, std::string* value)                         { os << "\""<< *value << "\""; }
 inline void ImSerialise(std::stringstream& os, ImVec2 value)                               { os << value.x << " " << value.y; }
@@ -120,7 +163,7 @@ namespace ImSerialisation
                     {
                         i++;
                     }
-                    const auto count = i - start_param;
+                    const size_t count = i - start_param;
                     // if it's only whitespace then continue
                     if (std::all_of(call.begin() + start_param, call.begin() + i, isspace))
                     {

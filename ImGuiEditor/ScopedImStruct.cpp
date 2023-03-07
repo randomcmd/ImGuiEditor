@@ -133,7 +133,7 @@ namespace ImStructs
     std::string ScopedImStruct::Serialise() const
     {
         std::stringstream ss;
-        ss << Name << "##69420(" << Begin->Serialise() << ", " << End->Serialise() << ", " << CallEndOnlyIfBeginReturnsTrue << ", ";
+        ss << Name << "##69420(" << ImStruct::Serialise() << ", "<< Begin->Serialise() << ", " << End->Serialise() << ", " << CallEndOnlyIfBeginReturnsTrue << ", ";
         ss << Canvas.Serialise();
         // remove last comma
         std::string serialised = ss.str();
@@ -145,11 +145,12 @@ namespace ImStructs
     void ScopedImStruct::Deserialise(std::string str)
     {
         ImSerialisation::Call call(str);
-        assert(call.Params.size() == 4 && "ScopedImStruct::Deserialise: Invalid number of parameters");
+        assert(call.Params.size() == 5 && "ScopedImStruct::Deserialise: Incorrect number of parameters");
         Name = call.FunctionName;
-        Begin->Deserialise(call.Params[0]);
-        End->Deserialise(call.Params[1]);
-        CallEndOnlyIfBeginReturnsTrue = std::stoi(call.Params[2]);
-        Canvas.Deserialise(call.Params[3], *ActiveIn);
+        ImStruct::Deserialise(call.Params[0]);
+        Begin->Deserialise(call.Params[1]);
+        End->Deserialise(call.Params[2]);
+        CallEndOnlyIfBeginReturnsTrue = std::stoi(call.Params[3]);
+        Canvas.Deserialise(call.Params[4], *ActiveIn);
     }
 }

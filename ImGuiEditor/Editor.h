@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <functional>
+#include <ranges>
 
 #include "ComponentWrapper.h"
 
@@ -21,7 +22,7 @@ using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
  * [1] Basic canvas functionality
  * [1] Recursive canvases
  * [1] Canvas data
- * [0] Canvas data serialization
+ * [0.9] Canvas data serialization TemporaryConstructFromName needs to be overhauled but not now pls
  *
  * Compilation (Honestly let's just rewrite a lot of the compilation system itself in the canvas):
  * [0] Compilation errors on label collision -> having two labels with the same name and giving an option to add ## random number to the end of the label to avoid collision on this compile
@@ -51,7 +52,7 @@ namespace ReMi
         void LoadPlugin(std::string_view path);
         [[nodiscard]] ImStructUPtr TemporaryConstructFromName(const std::string& name) const // TODO: Temporary because it doesn't take into consideration hash and potential revamp of plugin system
         {
-            for(auto& [component_map_name, component_map] : m_ComponentMaps) {
+            for(const auto& component_map : m_ComponentMaps | std::views::values) {
                 for(auto& [component_factory_name, component_factory] : component_map) {
                     if(component_factory_name.contains(name)) {
                         return ImStructUPtr((*component_factory)());
