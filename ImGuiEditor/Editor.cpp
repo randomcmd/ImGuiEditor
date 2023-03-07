@@ -1,92 +1,61 @@
 ﻿#include "Editor.h"
 
+#include <functional>
 #include <imgui.h>
 #include <string>
 #include <vector>
-#include "ImGuiStructs.h"
-CanvasContainer canvas;
 
-void ReMi::EditorWindow()
+#include "ImStructs.h"
+#include "Target.h"
+#include "plugin/Plugin.h"
+
+#define PREVIEW_LAST_COMPILE 1 // This is a temporary hack to import the compiled.cpp file
+
+#if PREVIEW_LAST_COMPILE
+#include "compiled.h"
+#endif
+
+using ImStructs::ImGuiComponentFactory;
+using ImStructs::ImStructComponent;
+
+void ReMi::Editor::Render()
+{
+    EditorWindow();
+    ComponentWindow();
+    Canvas();
+    m_Canvas.DrawTree();
+    CompileWindow();
+    SaveAndLoadWindow();
+}
+
+void ReMi::Editor::LoadPlugin(const std::string_view path)
+{
+    const Plugin* default_plugin = Plugin::LoadDLL(path);
+    for(auto& [name, plugin_map] : default_plugin->ComponentMaps) {
+        std::string name_with_plugin_hash = name + "##" + std::to_string(default_plugin->Hash());
+        m_ComponentMaps.insert({name_with_plugin_hash, plugin_map});
+    }
+}
+
+void ReMi::Editor::EditorWindow()
 {
     ImGui::Begin("Hello, world!");
-    
-    if(ImGui::Button("Add random text"))
-    {
-        canvas.m_ImStructs.push_back(new ImStructs::Text());
-    }
+    ImGui::BeginChild("ComponentWindows");
 
-    if(ImGui::BeginDragDropSource())
-    {
-        std::string payload = "Hello Sannej!";
-        ImGui::SetDragDropPayload("component", new int(0), sizeof(int));
-        ImGui::SetTooltip("addingg component");
-        ImGui::EndDragDropSource();
-    }
-    
-    if(ImGui::Button("Add random button"))
-    {
-        auto buttonData = new ImStructs::Button();
-        buttonData->label = "hej button";
-        canvas.m_ImStructs.push_back(buttonData);
-    }
+    // make child dockable
+    auto id = ImGui::GetID("ComponentWindows");
+    ImGui::DockSpace(id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-    if(ImGui::BeginDragDropSource())
-    {
-        std::string payload = "Hello Sannej!";
-        ImGui::SetDragDropPayload("component", new int(1), sizeof(int));
-        ImGui::SetTooltip("addingg component");
-        ImGui::EndDragDropSource();
-    }
-    
-    if(ImGui::Button("Add random input"))
-    {
-        auto inputTextData = new ImStructs::InputText();
-        inputTextData->label = "hej user input";
-        canvas.m_ImStructs.push_back(inputTextData);
-    }
-
-    if(ImGui::BeginDragDropSource())
-    {
-        std::string payload = "Hello Sannej!";
-        ImGui::SetDragDropPayload("component", new int(2), sizeof(int));
-        ImGui::SetTooltip("addingg component");
-        ImGui::EndDragDropSource();
-    }
-
-    bool showingEditor = false;
-    for (size_t i = 0; i<canvas.m_ImStructs.size(); i++)
-    {
-        auto component = canvas.m_ImStructs[i];
-        if(component->canvasFlags & ImStructs::CanvasFlags_Clicked)
+    for (auto& [name, plugin_map] : m_ComponentMaps) {
+        ImGui::Begin(name.c_str());
+        for (auto& [name, component_factory] : plugin_map)
         {
-            ImGui::Separator();
-            ImGui::PushID(component);
-            component->Editor();
-            ImGui::PopID();
-            showingEditor = true;
+            ComponentButton(name, component_factory);
         }
-        if(component->canvasFlags & ImStructs::CanvasFlags_Delete)
-        {
-            canvas.m_ImStructs.erase(std::remove(canvas.m_ImStructs.begin(), canvas.m_ImStructs.end(), component), canvas.m_ImStructs.end());
-            delete component;
-        }
+        ImGui::End();
     }
 
-    if(showingEditor)
-    {
-        ImGui::Separator();
-    }
-    static bool demo = false;
-    ImGui::Checkbox("Demo", &demo);
-    if (demo)
-    {
-        ImGui::ShowDemoWindow(&demo);
-    }
-
-    if(ImGui::Button("Compile"))
-    {
-        canvas.CompileCPP();
-    }
+    ImGui::EndChild();
     
     // can i anchor a buttom to the bottom of the window? a: no q: WAIT WHAT? a: yes, but you have to do it manually
     //ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 35); // remi you just didn't put it in the right function smh you put it in the slider editor or something LMAO
@@ -94,94 +63,114 @@ void ReMi::EditorWindow()
 
     // how would i make that the button is anchored to the right side of the screen? a: you can't, you have to do it manually
     //ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 80); // remi you just didn't put it in the right function smh you put it in the slider editor or something LMAO
+
+    ImGui::Begin("Misc");
+    
+    static bool demo = false;
+    ImGui::Checkbox("Demo", &demo);
+    if (demo)
+    {
+        ImGui::ShowDemoWindow(&demo);
+    }
+
+    if(ImGui::Button("Compile To File (Legacy)"))
+    {
+        m_Canvas.CompileCPP();
+    }
+
+    if(ImGui::Button("Compile To File (TargetV1)"))
+    {
+        static Target::Target target;
+        m_Canvas.CompileToFile(&target, "compiled.cpp");
+    }
+
+#if PREVIEW_LAST_COMPILE
+    static bool previewLastCompile = false;
+    ImGui::SameLine();
+    ImGui::Checkbox("Preview last compile", &previewLastCompile);
+    if(previewLastCompile) {
+        ImGui::Begin("Preview Last Compile");
+        Gui();
+        ImGui::End();
+    }
+#else
+    ImGui::SameLine();
+    ImGui::Text("Preview last compile is disabled");
+#endif
+    
+    ImGui::End();
+    ImGui::End();
+}
+
+void ReMi::Editor::ComponentWindow(bool* open)
+{
+    ImGui::Begin("Selected Components", open);
+    for (size_t i = 0; i<m_Canvas.ImStructs.size(); i++)
+    {
+        auto& component = m_Canvas.ImStructs[i];
+        if(component->CanvasFlags & ImStructs::CanvasFlags_Clicked)
+        {
+            ImGui::PushID(&component);
+            component->Editor();
+            ImGui::PopID();
+        }
+        if(component->CanvasFlags & ImStructs::CanvasFlags_Delete)
+        {
+            std::erase(m_Canvas.ImStructs, component);
+        }
+    }
     
     ImGui::End();
 }
 
-void ReMi::Canvas()
+void ReMi::Editor::CompileWindow() const
+{
+    ImGui::Begin("Target Compiler");
+    static std::string compiled;
+    if(ImGui::Button("Compile With Target V1"))
+    {
+        static Target::Target target;
+        compiled = m_Canvas.Compile(&target);
+    }
+    ImGui::InputTextMultiline("##compiled", &compiled, ImVec2(-3, -3), ImGuiInputTextFlags_AllowTabInput);
+    ImGui::End();
+}
+
+void ReMi::Editor::SaveAndLoadWindow()
+{
+    ImGui::Begin("Serialisation");
+    static std::string serialised;
+    if(ImGui::Button("Serialise"))
+    {
+        serialised = m_Canvas.Serialise();
+    }
+    if(ImGui::Button("Deserialise"))
+    {
+        m_Canvas.Deserialise(serialised, *this);
+    }
+    ImGui::InputTextMultiline("##serialised", &serialised, ImVec2(-3, -3), ImGuiInputTextFlags_AllowTabInput);
+    ImGui::End();
+}
+
+void ReMi::Editor::Canvas()
 {
     ImGui::Begin("Canvas");
-
-    if(canvas.m_ImStructs.empty()) {
-        if(CanvasDropTarget())
-        {
-            AddDropTargetToCanvas(0);
-        }
-    }
-    
-    // iterate through all the structs and draw them
-    for(size_t i = 0; i < canvas.m_ImStructs.size(); i++)
-    {
-        if(CanvasDropTarget())
-        {
-            AddDropTargetToCanvas(0);
-        }
-        auto component = canvas.m_ImStructs.at(i); 
-        ImGui::PushID(component);
-        component->Draw();
-        ImGui::PopID();
-        if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
-        if(ImGui::IsItemClicked()) component->canvasFlags |= ImStructs::CanvasFlags_Clicked;
-        if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-        {
-            std::string payload = "Hello Sannej!";
-            ImGui::SetDragDropPayload("move component", &i, sizeof(i));
-            ImGui::SetTooltip("movingg component %s", component->label.c_str());
-            ImGui::EndDragDropSource();
-        }
-        if(CanvasDropTarget())
-        {
-            AddDropTargetToCanvas(i + 1);
-        }
-    }
-    
+    m_Canvas.Draw();
     ImGui::End();
 }
 
-bool ReMi::CanvasDropTarget()
+void ReMi::Editor::ComponentButton(std::string_view label, const ImGuiComponentFactory* factory)
 {
-    auto mouseCursorPos = ImGui::GetMousePos();
-    auto cursorPos = ImGui::GetCursorScreenPos();
-    if(abs(mouseCursorPos.y - cursorPos.y) > 10) return false;
-    if(ImGui::GetDragDropPayload() == nullptr) return false;
-    ImGui::BeginChild("addcomponent", ImVec2(100, 10));
-    ImGui::EndChild();
-    if(ImGui::BeginDragDropTarget())
+    static size_t id = 0;
+    if(ImGui::Button(label.data())) // TODO: Maybe make this a colored button
     {
-        ImGui::EndDragDropTarget();
-        return true;
+        m_Canvas.ImStructs.emplace_back(factory->operator()());                    // TODO: Better id system
+        m_Canvas.ImStructs.back()->Label += std::format("##{}", id++);
     }
-    return false;
-}
-
-void ReMi::AddDropTargetToCanvas(size_t i)
-{
-    if(auto payload = ImGui::AcceptDragDropPayload("component")) {
-        ImStructs::ImStruct* component;
-        switch(*(int*)payload->Data)
-        {
-        case 0: component = new ImStructs::Text(); break;
-        case 1: component = new ImStructs::Button(); break;
-        default: component = new ImStructs::InputText();
-        }
-        auto iterator = canvas.m_ImStructs.begin() + static_cast<long long>(i);
-        canvas.m_ImStructs.insert(iterator, component);
-        printf("test");
-    }
-    if(auto payload = ImGui::AcceptDragDropPayload("move component"))
+    if(ImGui::BeginDragDropSource())
     {
-        // relocate old component
-        auto componentIndex = *static_cast<size_t*>(payload->Data);
-        auto component = canvas.m_ImStructs.at(componentIndex);
-        auto it = canvas.m_ImStructs.begin() + i;
-
-        if(componentIndex > i) // if we move it back
-        {
-            //it++;
-            componentIndex++;
-        }
-        
-        canvas.m_ImStructs.insert(it, component);
-        canvas.m_ImStructs.erase(canvas.m_ImStructs.begin() + componentIndex);
+        ImGui::SetDragDropPayload("component", factory, sizeof(ImGuiComponentFactory));
+        ImGui::SetTooltip("Adding %s", label.data());
+        ImGui::EndDragDropSource();
     }
 }

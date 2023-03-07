@@ -1,6 +1,5 @@
 // glfw define 
 #define GLFW_INCLUDE_NONE
-#include <cstdlib>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
@@ -29,18 +28,25 @@ int main()
 
     // Setup ImGui binding
     ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
-
+    
     // enable dockspace
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 460");
     
     // Setup style
     ImGui::StyleColorsDark();
     
-    static glm::vec3 clearColor = {0.69f, 0.42f, 0.96f};
-    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+    static glm::vec3 clear_color = {0.69f, 0.42f, 0.96f};
+    glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
+
+    ReMi::Editor editor;
+
+    auto default_plugin_path = "DefaultComponents.dll";
+    editor.LoadPlugin(default_plugin_path);
     
     // Main loop
     while(!glfwWindowShouldClose(window))
@@ -55,9 +61,17 @@ int main()
         ImGui::NewFrame();
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dockspace_flags);
-        ReMi::EditorWindow();
-        ReMi::Canvas();
+        
+        editor.Render();
+        
         ImGui::Render();
+        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            auto glfwContext = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(glfwContext);
+        }
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     } // why isn't this working? Answer: I forgot to call glfwSwapBuffers

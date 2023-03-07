@@ -78,6 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -159,15 +160,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CanvasData.cpp" />
+    <ClCompile Include="compiled.cpp" />
+    <ClCompile Include="Compiler.cpp" />
+    <ClCompile Include="ImStructs.cpp" />
+    <ClCompile Include="ScopedImStruct.cpp" />
+    <ClCompile Include="Target.cpp" />
+    <ClInclude Include="Compiler.h" />
+    <ClInclude Include="ComponentWrapper.h" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ImGuiEditor.cpp" />
     <ClCompile Include="ImGuiExtension.cpp" />
+    <ClInclude Include="ImSerialise.h" />
+    <ClInclude Include="plugin\Plugin.h" />
+    <ClInclude Include="Target.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CanvasData.h" />
+    <ClInclude Include="compiled.h" />
     <ClInclude Include="Editor.h" />
+    <ClCompile Include="ImGradient.cpp" />
     <ClInclude Include="ImGuiExtension.h" />
-    <ClInclude Include="ImGuiStructs.h" />
+    <ClInclude Include="ImStructs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="laylang" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,3 @@
+﻿ComponentName##Hash(("Label"), (Vec2.x Vec2.y));
+ComponentWrapper(ImStruct(DATA), their_own_data);
+ScopedImStruct(CallOne(), CallTwo());
