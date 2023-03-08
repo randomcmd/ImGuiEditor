@@ -36,6 +36,21 @@ using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
  * [1] Template compilation
  * [1] Template parameter naming
  *
+ * UI Overhaul:
+ * [0] New color palette
+ * [0] Top navigation bar -> Opening projects, settings other stuff
+ * [0] Better Tree View + Put method into ImStruct
+ * [0] Plugin UI
+ * [0] Better component editor
+ * [0] Save and load
+ * [0] Compilation
+ * [0] New Component window that can also shows all the components
+ * [0] Component Search
+ * [0] Editable Theme?
+ * [0] Improved drag and drop (I don't have a piss kink remove the yellow pls)
+ * [0] Improved override position? Snap to grid? Implement in ImStructComponent only?
+ * [0] Better font and emotes pls I want pensive :pensive:
+ *
  * General Code Style and Feature Usage:
  * [1] Abolish raw pointers
  *
