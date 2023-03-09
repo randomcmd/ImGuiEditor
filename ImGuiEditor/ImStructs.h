@@ -196,6 +196,14 @@ namespace ImStructs {
         ImGui::InputFloat(label.data(), *pointer);
         ImGui::PopID();
     }
+
+    template <>
+    inline void EditorHelper(const std::string_view label, float* pointer)
+    {
+        ImGui::PushID(pointer);
+        ImGui::InputFloat(label.data(), pointer);
+        ImGui::PopID();
+    }
     
     template <>
     inline void EditorHelper(const std::string_view label, std::string** pointer)
@@ -218,6 +226,14 @@ namespace ImStructs {
     {
         ImGui::PushID(pointer);
         ImGui::Checkbox(label.data(), *pointer);
+        ImGui::PopID();
+    }
+
+    template <>
+    inline void EditorHelper(const std::string_view label, bool* pointer)
+    {
+        ImGui::PushID(pointer);
+        ImGui::Checkbox(label.data(), pointer);
         ImGui::PopID();
     }
     
