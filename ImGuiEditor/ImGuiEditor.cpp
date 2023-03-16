@@ -11,6 +11,11 @@
 #include "Editor.h"
 #include "imgui/FreeTypeTest.h"
 
+// CHANGE THE IMCONFIG TO INCLUDE THE FOLLOWING PREPROCESSOR DEFINITIONS
+#define IMGUI_ENABLE_FREETYPE
+#define IMGUI_ENABLE_STB_TRUETYPE
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 int main()
 {
     // Setup GLFW and ImGui
