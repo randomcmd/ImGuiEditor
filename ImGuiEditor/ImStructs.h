@@ -1,19 +1,21 @@
 ﻿#pragma once
 #include <bitset>
-#include <imgui.h>
 #include <string>
-#include <imgui_stdlib.h>
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui_internal.h>
-#include <ostream>
+#include <functional>
+#include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
+#include "imgui_internal.h"
 
 #include "CanvasData.h"
 
-// #include "CanvasData.h"
 class CanvasContainer;
 
 namespace ImStructs {
-    struct ImStructComponent;
+    using ImStructUPtr =             std::unique_ptr<ImStruct>;
+    using ImStructComponentUPtr =    std::unique_ptr<ImStructComponent>;
+    using ScopedImStructUPtr =       std::unique_ptr<ScopedImStruct>;
+    // Wrap make_component_wrapper in a ImGuiComponentFactory so that it can easily be saved in a dict for creation of that component
+    using ImGuiComponentFactory = std::function<ImStructComponent*()>;
 
     using CanvasFlags = int;
     auto constexpr CanvasFlags_None = 0;
@@ -35,6 +37,17 @@ namespace ImStructs {
         virtual void Draw() = 0;                                                        // Draw the component
         virtual void PostDraw() = 0;                                                    // After drawing the component in the editor things like state syncing or gizmos can be done here WARNING THIS WILL NOT BE COMPILED
         virtual void Editor() = 0;                                                      // Draw editor for component in a separate window created by Editor.cpp
+        virtual void DrawTree()
+        {
+            if(ImGui::TreeNode(Label.c_str()))
+            {
+                const std::bitset<8> component_flags(ComponentFlags);
+                const std::bitset<8> canvas_flags(CanvasFlags);
+                ImGui::Text("Component Flags: 0x%s", component_flags.to_string().c_str());
+                ImGui::Text("Canvas Flags:    0x%s", canvas_flags.to_string().c_str());
+                ImGui::TreePop();
+            }
+        }
         bool DrawReturn;                                                                // if draw returns a boolean then place it here
         CanvasFlags CanvasFlags = CanvasFlags_None;
         ComponentFlags ComponentFlags = ComponentFlags_None;
@@ -44,10 +57,6 @@ namespace ImStructs {
         virtual ~ImStruct() = default;
     };
 
-    using ImStructUPtr =             std::unique_ptr<ImStruct>;
-    using ImStructComponentUPtr =    std::unique_ptr<ImStructComponent>;
-    using ScopedImStructUPtr =       std::unique_ptr<ScopedImStruct>;
-    
     struct ImStructComponent : ImStruct
     {
         ImStructComponent() = default;
@@ -86,6 +95,7 @@ namespace ImStructs {
         void PreDraw() override;
         void PostDraw() override;
         void Cleanup() override;
+        void DrawTree() override;
         std::string Compile() override;
         [[nodiscard]] std::string Serialise() const override;
         void Deserialise(std::string str) override;
@@ -168,8 +178,15 @@ namespace ImStructs {
         }
     };
     
+    enum EditorHelperFlags {
+        EditorHelperFlags_None = 0,
+        EditorHelperFlags_Drag = 1 << 0,
+        EditorHelperFlags_Slider = 1 << 1,
+        EditorHelperFlags_Input = 1 << 3,
+    };
+    
     template <typename T>
-    void EditorHelper(const std::string_view label, T)
+    void EditorHelper(const std::string_view label, T, EditorHelperFlags flags = EditorHelperFlags_None)
     {
         ImGui::Button("Type Not Implemented!");
         // add hover tooltip with type name
@@ -182,15 +199,23 @@ namespace ImStructs {
     }
 
     template <> 
-    inline void EditorHelper(const std::string_view label, int** pointer)
+    inline void EditorHelper(const std::string_view label, int** pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::InputInt(label.data(), *pointer);
         ImGui::PopID();
     }
+
+    template <> 
+    inline void EditorHelper(const std::string_view label, int* pointer, EditorHelperFlags flags)
+    {
+        ImGui::PushID(pointer);
+        ImGui::InputInt(label.data(), pointer);
+        ImGui::PopID();
+    }
     
     template <>
-    inline void EditorHelper(const std::string_view label, float** pointer)
+    inline void EditorHelper(const std::string_view label, float** pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::InputFloat(label.data(), *pointer);
@@ -198,15 +223,26 @@ namespace ImStructs {
     }
 
     template <>
-    inline void EditorHelper(const std::string_view label, float* pointer)
+    inline void EditorHelper(const std::string_view label, float* pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
-        ImGui::InputFloat(label.data(), pointer);
+        if(flags & EditorHelperFlags_Drag)
+        {
+            ImGui::DragFloat(label.data(), pointer);
+        }
+        else if(flags & EditorHelperFlags_Slider)
+        {
+            ImGui::SliderFloat(label.data(), pointer, 0, 100, "%.3f", ImGuiSliderFlags_None);
+        }
+        else
+        {
+            ImGui::InputFloat(label.data(), pointer);
+        }
         ImGui::PopID();
     }
     
     template <>
-    inline void EditorHelper(const std::string_view label, std::string** pointer)
+    inline void EditorHelper(const std::string_view label, std::string** pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::InputText(label.data(), *pointer);
@@ -214,7 +250,7 @@ namespace ImStructs {
     }
     
     template <>
-    inline void EditorHelper(const std::string_view label, const char** pointer)
+    inline void EditorHelper(const std::string_view label, const char** pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::InputText(label.data(), (char*) *pointer, 256, ImGuiInputTextFlags_ReadOnly); // ImGuiInputTextFlags_ReadOnly assures const is not violated  // NOLINT(clang-diagnostic-cast-qual)
@@ -222,7 +258,7 @@ namespace ImStructs {
     }
 
     template <>
-    inline void EditorHelper(const std::string_view label, bool** pointer)
+    inline void EditorHelper(const std::string_view label, bool** pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::Checkbox(label.data(), *pointer);
@@ -230,7 +266,7 @@ namespace ImStructs {
     }
 
     template <>
-    inline void EditorHelper(const std::string_view label, bool* pointer)
+    inline void EditorHelper(const std::string_view label, bool* pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::Checkbox(label.data(), pointer);
@@ -238,7 +274,7 @@ namespace ImStructs {
     }
     
     template <>
-    inline void EditorHelper(const std::string_view label, ImVec2* pointer)
+    inline void EditorHelper(const std::string_view label, ImVec2* pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::DragFloat2(label.data(), (float*)pointer);
@@ -246,7 +282,7 @@ namespace ImStructs {
     }
     
     template <>
-    inline void EditorHelper(const std::string_view label, ImColor* pointer)
+    inline void EditorHelper(const std::string_view label, ImColor* pointer, EditorHelperFlags flags)
     {
         ImGui::PushID(pointer);
         ImGui::ColorEdit4(label.data(), (float*)pointer);

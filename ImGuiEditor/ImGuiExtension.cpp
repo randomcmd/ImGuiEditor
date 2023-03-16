@@ -1,5 +1,4 @@
 ﻿#include "ImGuiExtension.h"
-#include <imgui_stdlib.h>
 
 namespace ImGui
 {

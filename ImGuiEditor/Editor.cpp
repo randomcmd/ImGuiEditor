@@ -1,11 +1,12 @@
 ﻿#include "Editor.h"
 
 #include <functional>
-#include <imgui.h>
+#include "imgui.h"
 #include <string>
 #include <vector>
 
 #include "ImStructs.h"
+#include "ImGuiExtension.h"
 #include "Target.h"
 #include "plugin/Plugin.h"
 
@@ -18,11 +19,22 @@
 using ImStructs::ImGuiComponentFactory;
 using ImStructs::ImStructComponent;
 
+ReMi::Editor::Editor()
+{
+    m_ImGuiStyle = ReMi::VisualStudioRounded();
+}
+
 void ReMi::Editor::Render()
 {
+    if(override_color_scheme) {
+        ImGui::GetStyle() = m_ImGuiStyle;
+    }
     EditorWindow();
     ComponentWindow();
     Canvas();
+    if(override_color_scheme) {
+        ImGui::GetStyle() = m_ImGuiStyle;
+    }
     m_Canvas.DrawTree();
     CompileWindow();
     SaveAndLoadWindow();
@@ -97,6 +109,29 @@ void ReMi::Editor::EditorWindow()
     ImGui::SameLine();
     ImGui::Text("Preview last compile is disabled");
 #endif
+
+    static bool ShowStyleEditor = false;
+    ImGui::Checkbox("Style Editor", &ShowStyleEditor);
+    if (ShowStyleEditor && m_Canvas.m_ImGuiStyle.has_value())
+    {
+        ImGui::Begin("Style Editor", &ShowStyleEditor);
+        
+        static ImGuiStyle style = m_Canvas.m_ImGuiStyle.value();
+        static ImGuiStyle default_style = style;
+        static bool always_apply = false;
+        ReMi::StyleEditor(style);
+        ImGui::Checkbox("Always Apply Style", &always_apply);
+        if(always_apply || ImGui::Button("Apply Style"))
+        {
+            m_Canvas.m_ImGuiStyle = style;
+        }
+        if(ImGui::Button("Reset Style"))
+        {
+            m_Canvas.m_ImGuiStyle = default_style;
+        }
+        
+        ImGui::End();
+    }
     
     ImGui::End();
     ImGui::End();
@@ -105,7 +140,7 @@ void ReMi::Editor::EditorWindow()
 void ReMi::Editor::ComponentWindow(bool* open)
 {
     ImGui::Begin("Selected Components", open);
-    for (size_t i = 0; i<m_Canvas.ImStructs.size(); i++)
+    for (size_t i = 0; i < m_Canvas.ImStructs.size(); i++)
     {
         auto& component = m_Canvas.ImStructs[i];
         if(component->CanvasFlags & ImStructs::CanvasFlags_Clicked)
@@ -154,6 +189,7 @@ void ReMi::Editor::SaveAndLoadWindow()
 
 void ReMi::Editor::Canvas()
 {
+    ImGui::GetStyle() = m_Canvas.m_ImGuiStyle.value_or(ImGui::GetStyle());
     ImGui::Begin("Canvas");
     m_Canvas.Draw();
     ImGui::End();

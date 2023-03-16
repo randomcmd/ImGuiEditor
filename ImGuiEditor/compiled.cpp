@@ -1,13 +1,7 @@
-#include <imgui.h>
-
-#include "ImGuiExtension.h"
+#include "compiled.h"
+#include "ImStructs.h"
 
 void Gui()
 {
-    static ImGuiStyle style = ImGui::GetStyle();
-    ReMi::StyleEditor(style);
-    if(ImGui::Button("Apply Style"))
-    {
-        ImGui::GetStyle() = style;
-    }
+    ImGui::Text("This is a text");
 }

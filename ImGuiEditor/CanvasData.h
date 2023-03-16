@@ -3,8 +3,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "imgui.h"
 
-#include "Compiler.h"
+namespace CompilerFramework
+{
+    class Compiler;
+}
 
 namespace ReMi
 {
@@ -14,17 +18,19 @@ namespace ReMi
 namespace ImStructs
 {
     struct ImStruct;
+    struct ImStructComponent;
+    struct ScopedImStruct;
     using CanvasFlags = int;
     using ComponentFlags = int;
-    struct ScopedImStruct;
 }
 
 class CanvasContainer
 {
 public:
-    CanvasContainer() : m_UUID(rand()) {}
-    
+    CanvasContainer();
+
     std::vector<std::unique_ptr<ImStructs::ImStruct>> ImStructs; // TODO: Make this accept ImStruct
+    std::optional<ImGuiStyle> m_ImGuiStyle;
     
     bool CanvasDropTarget(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
     void AddDropTargetToCanvas(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);

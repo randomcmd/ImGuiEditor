@@ -4,6 +4,13 @@
 
 #include "ComponentWrapper.h"
 
+namespace ImStructs
+{
+    struct ScopedImStruct;
+    struct ImStructComponent;
+    struct ImStruct;
+}
+
 using ImStructUPtr =             std::unique_ptr<ImStructs::ImStruct>;
 using ImStructComponentUPtr =    std::unique_ptr<ImStructs::ImStructComponent>;
 using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
@@ -63,6 +70,7 @@ namespace ReMi
     class Editor
     {
     public:
+        Editor();
         void Render();
         void LoadPlugin(std::string_view path);
         [[nodiscard]] ImStructUPtr TemporaryConstructFromName(const std::string& name) const // TODO: Temporary because it doesn't take into consideration hash and potential revamp of plugin system
@@ -77,6 +85,8 @@ namespace ReMi
             return {};
         }
         
+        static constexpr bool override_color_scheme = true;
+        
     private:
         void EditorWindow();
         void ComponentWindow(bool* open = nullptr);
@@ -90,6 +100,8 @@ namespace ReMi
         CanvasContainer     m_Canvas; // TODO(faraway): Have different editor windows have different canvases and states for editing of multiple guis at the same time
         ComponentMaps       m_ComponentMaps;
         ComponentMap        m_ComponentDict;
+
+        ImGuiStyle          m_ImGuiStyle;
     };
     
     extern Editor* CurrentEditor(Editor* editor = nullptr);
