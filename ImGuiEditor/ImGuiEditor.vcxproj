@@ -92,10 +92,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(SolutionDir)freetype\freetype\include;$(SolutionDir)imgui\imgui;$(SolutionDir)glm\glm;$(SolutionDir)glad\include;$(SolutionDir)GLFW\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,10 +109,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(SolutionDir)freetype\freetype\include;$(SolutionDir)imgui\imgui;$(SolutionDir)glm\glm;$(SolutionDir)glad\include;$(SolutionDir)GLFW\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,10 +128,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(SolutionDir)freetype\freetype\include;$(SolutionDir)imgui\imgui;$(SolutionDir)glm\glm;$(SolutionDir)glad\include;$(SolutionDir)GLFW\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,10 +149,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(SolutionDir)freetype\freetype\include;$(SolutionDir)imgui\imgui;$(SolutionDir)glm\glm;$(SolutionDir)glad\include;$(SolutionDir)GLFW\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -162,14 +166,19 @@
     <ClCompile Include="CanvasData.cpp" />
     <ClCompile Include="compiled.cpp" />
     <ClCompile Include="Compiler.cpp" />
+    <ClCompile Include="imgui\FreeTypeTest.cpp" />
+    <ClCompile Include="ImReflection.cpp" />
     <ClCompile Include="ImStructs.cpp" />
     <ClCompile Include="ScopedImStruct.cpp" />
+    <ClCompile Include="StyleEditor.cpp" />
     <ClCompile Include="Target.cpp" />
     <ClInclude Include="Compiler.h" />
     <ClInclude Include="ComponentWrapper.h" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ImGuiEditor.cpp" />
     <ClCompile Include="ImGuiExtension.cpp" />
+    <ClInclude Include="imgui\FreeTypeTest.h" />
+    <ClInclude Include="ImReflection.h" />
     <ClInclude Include="ImSerialise.h" />
     <ClInclude Include="plugin\Plugin.h" />
     <ClInclude Include="Target.h" />
@@ -184,8 +193,41 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="laylang" />
+    <Content Include="resources\Inter-Black.ttf" />
+    <Content Include="resources\Inter-Bold.ttf" />
+    <Content Include="resources\Inter-ExtraBold.ttf" />
+    <Content Include="resources\Inter-ExtraLight.ttf" />
+    <Content Include="resources\Inter-Light.ttf" />
+    <Content Include="resources\Inter-Medium.ttf" />
+    <Content Include="resources\Inter-Regular.ttf" />
+    <Content Include="resources\Inter-SemiBold.ttf" />
+    <Content Include="resources\Inter-Thin.ttf" />
+    <Content Include="resources\NotoSans-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\glad\glad.vcxproj">
+      <Project>{1430826a-02f3-44a3-937a-7c5cd81eba84}</Project>
+      <Name>glad</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GLFW\GLFW.vcxproj">
+      <Project>{be8f03c1-5e9e-4a48-a0e2-d79f1085323a}</Project>
+      <Name>GLFW</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\glm\glm.vcxproj">
+      <Project>{990d70af-b517-4939-a820-e56f61d4014f}</Project>
+      <Name>glm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\imgui\imgui.vcxproj">
+      <Project>{497b642c-fc0a-4534-bc98-a9baf5747c94}</Project>
+      <Name>imgui</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgManifestInstall>false</VcpkgManifestInstall>
+    <VcpkgAutoLink>false</VcpkgAutoLink>
+  </PropertyGroup>
 </Project>

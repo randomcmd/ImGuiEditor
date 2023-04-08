@@ -1,0 +1,14 @@
+[submodule "glfw"]
+	path = GLFW\\glfw
+	url = https://github.com/glfw/glfw.git
+	branch = 3.3-stable
+[submodule "imgui"]
+	path = imgui\\imgui
+	url = https://github.com/ocornut/imgui
+[submodule "freetype"]
+	path = freetype\\freetype
+	url = https://github.com/freetype/freetype
+	branch = 2.6.5
+[submodule "glm"]
+	path = glm\\glm
+	url = https://github.com/g-truc/glm

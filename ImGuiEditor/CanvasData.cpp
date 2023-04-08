@@ -3,8 +3,17 @@
 #include <filesystem>
 #include <fstream>
 
+#include "ImStructs.h"
 #include "ComponentWrapper.h"
 #include "Editor.h"
+#include "Compiler.h"
+
+CanvasContainer::CanvasContainer(): m_UUID(rand())
+{
+    ImGuiStyle dark;
+    ImGui::StyleColorsDark(&dark);
+    m_ImGuiStyle = dark;
+}
 
 bool CanvasContainer::CanvasDropTarget(const size_t i, const ImStructs::CanvasFlags canvas_flags, const ImStructs::ComponentFlags component_flags)
 {
@@ -68,6 +77,9 @@ void CanvasContainer::UpdateCanvasFlags()
 void CanvasContainer::Draw()
 {
     UpdateCanvasFlags();
+    if(ReMi::Editor::override_color_scheme) {
+        ImGui::GetStyle() = m_ImGuiStyle.value_or(ImGui::GetStyle());
+    }
     CanvasDropTarget(0);
     
     // iterate through all the structs and draw them
@@ -142,26 +154,7 @@ void CanvasContainer::DrawTree(const bool in_new_window) const
     for(const auto& component : ImStructs)
     {
         ImGui::PushID(&component);
-        if(ImGui::TreeNode(component->Label.c_str()))
-        {
-            std::bitset<8> component_flags(component->ComponentFlags);
-            std::bitset<8> canvas_flags(component->CanvasFlags);
-            ImGui::Text("Component Flags: 0x%s", component_flags.to_string().c_str());
-            ImGui::Text("Canvas Flags:    0x%s", canvas_flags.to_string().c_str());
-            if(dynamic_cast<ImStructs::ScopedImStruct*>(component.get()))
-            {
-                const auto scoped = dynamic_cast<ImStructs::ScopedImStruct*>(component.get());
-                if(ImGui::TreeNode("Canvas")) {
-                    if(ImGui::BeginDragDropTarget()) {
-                        scoped->Canvas.AddDropTargetToCanvas(0);
-                        ImGui::EndDragDropTarget();
-                    }
-                    scoped->Canvas.DrawTree(false);
-                    ImGui::TreePop();
-                }
-            }
-            ImGui::TreePop();
-        }
+        component->DrawTree();
         ImGui::PopID();
     }
 

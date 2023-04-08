@@ -4,6 +4,13 @@
 
 #include "ComponentWrapper.h"
 
+namespace ImStructs
+{
+    struct ScopedImStruct;
+    struct ImStructComponent;
+    struct ImStruct;
+}
+
 using ImStructUPtr =             std::unique_ptr<ImStructs::ImStruct>;
 using ImStructComponentUPtr =    std::unique_ptr<ImStructs::ImStructComponent>;
 using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
@@ -36,6 +43,21 @@ using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
  * [1] Template compilation
  * [1] Template parameter naming
  *
+ * UI Overhaul:
+ * [0] New color palette
+ * [0] Top navigation bar -> Opening projects, settings other stuff
+ * [0] Better Tree View + Put method into ImStruct
+ * [0] Plugin UI
+ * [0] Better component editor
+ * [0] Save and load
+ * [0] Compilation
+ * [0] New Component window that can also shows all the components
+ * [0] Component Search
+ * [0] Editable Theme?
+ * [0] Improved drag and drop (I don't have a piss kink remove the yellow pls)
+ * [0] Improved override position? Snap to grid? Implement in ImStructComponent only?
+ * [0] Better font and emotes pls I want pensive :pensive:
+ *
  * General Code Style and Feature Usage:
  * [1] Abolish raw pointers
  *
@@ -48,6 +70,7 @@ namespace ReMi
     class Editor
     {
     public:
+        Editor();
         void Render();
         void LoadPlugin(std::string_view path);
         [[nodiscard]] ImStructUPtr TemporaryConstructFromName(const std::string& name) const // TODO: Temporary because it doesn't take into consideration hash and potential revamp of plugin system
@@ -62,6 +85,8 @@ namespace ReMi
             return {};
         }
         
+        static constexpr bool override_color_scheme = true;
+        
     private:
         void EditorWindow();
         void ComponentWindow(bool* open = nullptr);
@@ -75,6 +100,8 @@ namespace ReMi
         CanvasContainer     m_Canvas; // TODO(faraway): Have different editor windows have different canvases and states for editing of multiple guis at the same time
         ComponentMaps       m_ComponentMaps;
         ComponentMap        m_ComponentDict;
+
+        ImGuiStyle          m_ImGuiStyle;
     };
     
     extern Editor* CurrentEditor(Editor* editor = nullptr);

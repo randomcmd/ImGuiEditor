@@ -1,13 +1,20 @@
 // glfw define 
 #define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-#include <glm/vec3.hpp>
+
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+#include "imgui.h"
+#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_glfw.h"
+#include "glm/vec3.hpp"
 
 #include "Editor.h"
+#include "imgui/FreeTypeTest.h"
+
+// CHANGE THE IMCONFIG TO INCLUDE THE FOLLOWING PREPROCESSOR DEFINITIONS
+#define IMGUI_ENABLE_FREETYPE
+#define IMGUI_ENABLE_STB_TRUETYPE
+#define IMGUI_DEFINE_MATH_OPERATORS
 
 int main()
 {
@@ -34,16 +41,28 @@ int main()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     
+    // Loading fonts
+    io.Fonts->AddFontFromFileTTF("C:\\Users\\mailr\\Workspace\\best programming language\\ImGuiEditor\\ImGuiEditor\\resources\\Inter-Regular.ttf", 16.0f);
+    static ImWchar ranges[] = { static_cast<ImWchar>(0x1), static_cast<ImWchar>(0x1FFFF), static_cast<ImWchar>(0) };
+    static ImFontConfig cfg;
+    cfg.OversampleH = cfg.OversampleV = 1;
+    cfg.MergeMode = true;
+    cfg.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_LoadColor;
+    io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\seguiemj.ttf", 16.0f, &cfg, ranges);
+    
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
     
     // Setup style
-    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsDark();
+    //ImGui::GetStyle() = ReMi::RenewedStyle();
+    //ImGui::GetStyle() = ReMi::VisualStudioRounded();
     
-    static glm::vec3 clear_color = {0.69f, 0.42f, 0.96f};
+    static glm::vec3 clear_color = {32.0/255.0, 32.0/255.0, 32.0/255.0};
     glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
 
     ReMi::Editor editor;
+    FreeTypeTest free_type_test;
 
     auto default_plugin_path = "DefaultComponents.dll";
     editor.LoadPlugin(default_plugin_path);
@@ -56,9 +75,15 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         
         // setup imgui that can close the window
+        if(free_type_test.PreNewFrame())
+        {
+            ImGui_ImplOpenGL3_DestroyDeviceObjects();
+            ImGui_ImplOpenGL3_CreateDeviceObjects();
+        }
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        free_type_test.ShowFontsOptionsWindow();
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dockspace_flags);
         

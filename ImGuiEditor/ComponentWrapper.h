@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <functional>
 #include <vector>
 #include <sstream>
 
@@ -205,7 +204,4 @@ namespace ImStructs
     {
         return new ComponentWrapper<F, Args...>{std::forward<F>(f), std::forward<Args>(args)...};
     }
-
-    // Wrap make_component_wrapper in a ImGuiComponentFactory so that it can easily be saved in a dict for creation of that component
-    using ImGuiComponentFactory = std::function<ImStructComponent*()>;
 }

@@ -95,7 +95,7 @@ extern "C" __declspec(dllexport) Plugin* create(ImGuiContext* context, ImGuiMemA
                         "Add float slider (ComponentWrapper)##ImGui::SliderFloat",
                         new ImStructs::ImGuiComponentFactory([]()
                         {
-                            bool (*SliderFloat)(const char*, float*, float, float, const char*, float) = ImGui::SliderFloat;
+                            bool (*SliderFloat)(const char*, float*, float, float, const char*, ImGuiSliderFlags) = ImGui::SliderFloat;
                             const auto slider_float = ImStructs::make_component_wrapper(
                                 std::function(SliderFloat), static_cast<const char*>("Slider Float In Me"), new float(0.0f),
                                 0.0f, 1.0f, static_cast<const char*>("%.3f"), 1.0f);

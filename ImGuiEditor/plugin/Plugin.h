@@ -1,10 +1,9 @@
 ﻿#pragma once
 #include <filesystem>
-#include <imgui_internal.h>
 #include <iostream>
 #include <Windows.h>
 
-#include "../Editor.h"
+#include "../ImStructs.h"
 
 using ComponentMap = std::unordered_map<std::string, const ImStructs::ImGuiComponentFactory*>;
 using ComponentMaps = std::unordered_map<std::string, ComponentMap>;
@@ -36,14 +35,14 @@ public:
         hash ^= std::hash<std::string>{}(PluginSpecs.Github);
 
         if constexpr (ADD_MAPS_TO_HASH) {
-        for(auto& [key, value] : ComponentMaps)
-        {
-            hash ^= std::hash<std::string>{}(key);
-            for(auto& [key2, value2] : value)
+            for(auto& [key, value] : ComponentMaps)
             {
-                hash ^= std::hash<std::string>{}(key2);
+                hash ^= std::hash<std::string>{}(key);
+                for(auto& [key2, value2] : value)
+                {
+                    hash ^= std::hash<std::string>{}(key2);
+                }
             }
-        }
         }
 
         return hash;

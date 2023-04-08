@@ -1,6 +1,6 @@
-﻿#include "ComponentWrapper.h"
+﻿#include "ImStructs.h"
+#include "ComponentWrapper.h"
 #include "Editor.h"
-#include "ImStructs.h"
 
 namespace ImStructs
 {
@@ -98,6 +98,26 @@ namespace ImStructs
         if (Begin && Begin->DrawReturn)
         {
             End->Cleanup();
+        }
+    }
+
+    void ScopedImStruct::DrawTree()
+    {
+        if(ImGui::TreeNode(Label.c_str()))
+        {
+            const std::bitset<8> component_flags(ComponentFlags);
+            const std::bitset<8> canvas_flags(CanvasFlags);
+            ImGui::Text("Component Flags: 0x%s", component_flags.to_string().c_str());
+            ImGui::Text("Canvas Flags:    0x%s", canvas_flags.to_string().c_str());
+            if(ImGui::TreeNode("Canvas")) {
+                if(ImGui::BeginDragDropTarget()) {
+                    Canvas.AddDropTargetToCanvas(0);
+                    ImGui::EndDragDropTarget();
+                }
+                Canvas.DrawTree(false);
+                ImGui::TreePop();
+            }
+            ImGui::TreePop();
         }
     }
 
