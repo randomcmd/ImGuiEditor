@@ -9,7 +9,7 @@ std::string Target::CodeChunk::Compile(const CompilerFramework::CodeFile* code_f
     std::stringstream ss;
     for(auto& line : Lines)
     {
-        ss << line;
+        ss << "\t" << line << "\n";
     }
     return ss.str();
 }
@@ -17,13 +17,18 @@ std::string Target::CodeChunk::Compile(const CompilerFramework::CodeFile* code_f
 std::string Target::Method::Compile(const CompilerFramework::CodeFile* code_file) const
 {
     std::stringstream ss;
+
+    // Default ImGui Imports
+    ss << "#include \"imgui.h\"\n";
+    ss << "#include \"ImGuiExtensions.h\"\n\n";
+    
     ss << "void " << Name << "()\n";
-    ss << "{";
+    ss << "{\n";
     for (auto& chunk : CodeChunks)
     {
         ss << chunk->Compile(code_file);
     }
-    ss << "}";
+    ss << "}\n";
 
     return ss.str();
 }
@@ -41,7 +46,7 @@ std::string Target::CodeFile::FullyCompile() const
 std::string Target::Target::Compile(const CanvasContainer* root_canvas)
 {
     std::stringstream code;
-    code << "// COMPILED BY TARGET V1" << std::endl;
+    code << "// COMPILED BY TARGET V1\n";
 
     CodeFile code_file;
     

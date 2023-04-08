@@ -170,6 +170,7 @@
   <ItemGroup>
     <ClCompile Include="..\ImGuiEditor\CanvasData.cpp" />
     <ClCompile Include="..\ImGuiEditor\compiled.cpp" />
+    <ClCompile Include="..\ImGuiEditor\EditorPluginAPI.cpp" />
     <ClCompile Include="..\ImGuiEditor\ImGradient.cpp" />
     <ClCompile Include="..\ImGuiEditor\ImStructs.cpp" />
     <ClCompile Include="..\ImGuiEditor\ScopedImStruct.cpp" />
@@ -188,6 +189,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ImGuiEditor\ComponentWrapper.h" />
+    <ClInclude Include="..\ImGuiEditor\Editor.h" />
     <ClInclude Include="..\ImGuiEditor\ImSerialise.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

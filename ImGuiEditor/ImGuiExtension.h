@@ -10,7 +10,7 @@ namespace ImGui
 namespace ReMi
 {
     void StyleEditor(ImGuiStyle& style);
-    ImGuiStyle RenewedStyle();
+    ImGuiStyle RenewedTheme();
     ImGuiStyle VisualStudioRounded();
     ImGuiStyle ImportFromFile(std::filesystem::path path);
 }
