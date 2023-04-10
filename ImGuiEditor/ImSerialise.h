@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "imgui.h"
 #include <iostream>
+#include <numeric>
 #include <optional>
 #include <sstream>
 #include <stack>
@@ -131,6 +132,33 @@ namespace ImSerialisation
             }
 
             Params = ParseArgsFromCall(call, parameter_start + 1, call.find_last_of(")"));
+        }
+
+        Call(std::string_view FunctionName, Parameters Params, std::optional<size_t> Hash = std::nullopt)
+            : FunctionName(FunctionName), Hash(Hash), Params(Params)
+        {
+            
+        }
+
+        std::string string()
+        {
+            std::stringstream ss;
+            ss << FunctionName;
+            if(Hash)
+            {
+                ss << "##" << *Hash;
+            }
+            ss << "(";
+            for(size_t i = 0; i < Params.size(); i++)
+            {
+                ss << Params[i];
+                if(i != Params.size() - 1)
+                {
+                    ss << ", ";
+                }
+            }
+            ss << ")";
+            return ss.str();
         }
         
         std::string FunctionName;

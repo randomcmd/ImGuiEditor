@@ -27,17 +27,18 @@ namespace ImStructs
 class CanvasContainer
 {
 public:
-    CanvasContainer();
+    explicit CanvasContainer();
 
-    std::vector<std::unique_ptr<ImStructs::ImStruct>> ImStructs; // TODO: Make this accept ImStruct
+    std::vector<std::unique_ptr<ImStructs::ImStruct>> ImStructs;
     std::optional<ImGuiStyle> m_ImGuiStyle;
+    ImStructs::ImStruct* m_ActiveIn;
     
     bool CanvasDropTarget(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
     void AddDropTargetToCanvas(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
     void UpdateCanvasFlags();
 
     void Draw();
-    void DrawTree(bool in_new_window = true) const;
+    void DrawTree() const;
     void CompileCPP() const;
     [[nodiscard]] std::string Serialise() const;
     void Clear();

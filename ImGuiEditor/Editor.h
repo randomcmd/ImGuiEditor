@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include <functional>
-#include <ranges>
 
 #include "ComponentWrapper.h"
+#include "EditorSettings.h"
+#include "imgui/FreeTypeTest.h"
+#include "plugin/Plugin.h"
 
 namespace ImStructs
 {
@@ -44,19 +46,24 @@ using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
  * [1] Template parameter naming
  *
  * UI Overhaul:
- * [0] New color palette
- * [0] Top navigation bar -> Opening projects, settings other stuff
- * [0] Better Tree View + Put method into ImStruct
- * [0] Plugin UI
+ * [1] New color palette
+ * [1] Top navigation bar -> Opening projects, settings other stuff
+ * [1] Better Tree View + Put method into ImStruct
+ * [0.5] Plugin UI
  * [0] Better component editor
- * [0] Save and load
+ * [1] Save and load
  * [0] Compilation
  * [0] New Component window that can also shows all the components
  * [0] Component Search
- * [0] Editable Theme?
+ * [1] Editable Theme?
  * [0] Improved drag and drop (I don't have a piss kink remove the yellow pls)
  * [0] Improved override position? Snap to grid? Implement in ImStructComponent only?
- * [0] Better font and emotes pls I want pensive :pensive:
+ * [0.99] Better font and emotes pls I want pensive :pensive:
+ * [0] Hello World Window
+ * [0.5] Settings Window and Saving
+ * [1] Opening Files and Plugins and Saving Files
+ * [0] Integrate Editor Label
+ * [0] Error API
  *
  * General Code Style and Feature Usage:
  * [1] Abolish raw pointers
@@ -71,29 +78,34 @@ namespace ReMi
     {
     public:
         Editor();
+        void PreNewFrame();
         void Render();
-        void LoadPlugin(std::string_view path);
-        [[nodiscard]] ImStructUPtr TemporaryConstructFromName(const std::string& name) const // TODO: Temporary because it doesn't take into consideration hash and potential revamp of plugin system
-        {
-            for(const auto& component_map : m_ComponentMaps | std::views::values) {
-                for(auto& [component_factory_name, component_factory] : component_map) {
-                    if(component_factory_name.contains(name)) {
-                        return ImStructUPtr((*component_factory)());
-                    }
-                }
-            }
-            return {};
-        }
-        
+        void LoadPlugin(std::filesystem::path path);
+        void UnloadPlugin(Plugin& plugin);
+
+        // Editor Plugin API
+        [[nodiscard]] ImStructUPtr TemporaryConstructFromName(const std::string& name) const; // TODO: Temporary because it doesn't take into consideration hash and potential revamp of plugin system
+
+        void OpenProjectFromPath(std::filesystem::path path);
+        void AddComponent(ImStructUPtr component);
+        size_t ComponentID();
+
+        // Temporary fix for native ImGui Style Editor
         static constexpr bool override_color_scheme = true;
-        
+
     private:
         void EditorWindow();
         void ComponentWindow(bool* open = nullptr);
         void CompileWindow() const;
+        void ComponentTreeWindow() const;
         void SaveAndLoadWindow();
+        void DebugWindow();
+        void RightClickMenu();
+        void VoidWindow();
         void Canvas();
+        
         void ComponentButton(std::string_view label, const ImStructs::ImGuiComponentFactory* factory);
+        
         using ComponentMap = std::unordered_map<std::string, const ImStructs::ImGuiComponentFactory*>;
         using ComponentMaps = std::unordered_map<std::string, ComponentMap>;
 
@@ -101,8 +113,14 @@ namespace ReMi
         ComponentMaps       m_ComponentMaps;
         ComponentMap        m_ComponentDict;
 
+        std::vector<std::unique_ptr<Plugin>> m_LoadedPlugins;
+        
+        EditorSettings      m_EditorSettings;
+        void ApplySettings();
+
         ImGuiStyle          m_ImGuiStyle;
+        FreeTypeTest        m_FreeTypeTest;
+
+        size_t             m_LastComponentID = 1;
     };
-    
-    extern Editor* CurrentEditor(Editor* editor = nullptr);
 }

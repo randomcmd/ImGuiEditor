@@ -8,7 +8,7 @@
 #include "Editor.h"
 #include "Compiler.h"
 
-CanvasContainer::CanvasContainer(): m_UUID(rand())
+CanvasContainer::CanvasContainer() : m_UUID(rand())
 {
     ImGuiStyle dark;
     ImGui::StyleColorsDark(&dark);
@@ -40,6 +40,8 @@ void CanvasContainer::AddDropTargetToCanvas(const size_t i, const ImStructs::Can
         auto component = construct();
         component->ComponentFlags = component_flags;
         component->CanvasFlags = canvas_flags;
+        component->ActiveIn = m_ActiveIn->ActiveIn;
+        component->Label += std::format("##{}", m_ActiveIn->ActiveIn->ComponentID());
         const auto iterator = ImStructs.begin() + static_cast<long long>(i);
         ImStructs.emplace(iterator, component);
     }
@@ -52,7 +54,7 @@ void CanvasContainer::AddDropTargetToCanvas(const size_t i, const ImStructs::Can
         component->CanvasFlags = canvas_flags;
         const auto it = ImStructs.begin() + i;
 
-        if(componentIndex > i) // if we move it back
+        if(componentIndex >= i) // if we move it back
         {
             //it++;
             componentIndex++;
@@ -65,8 +67,9 @@ void CanvasContainer::AddDropTargetToCanvas(const size_t i, const ImStructs::Can
 
 void CanvasContainer::UpdateCanvasFlags()
 {
-    for (auto& component : ImStructs) // Applying canvas flags
+    for (size_t i = 0; i < ImStructs.size(); i++) // Applying canvas flags
     {
+        const auto& component = ImStructs.at(i);
         if(component->CanvasFlags & ImStructs::CanvasFlags_Delete)
         {
             std::erase(ImStructs, component);
@@ -92,13 +95,11 @@ void CanvasContainer::Draw()
         component->PostDraw();
         component->Cleanup();
         ImGui::PopID();
-        if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
-        if(ImGui::IsItemClicked()) component->CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
         {
             std::string payload = "Hello Sannej!";
             ImGui::SetDragDropPayload(m_MoveType.c_str(), &i, sizeof(i));
-            ImGui::SetTooltip("movingg component %s", component->Label.c_str());
+            ImGui::SetTooltip("Movingg Component %s", component->Label.c_str());
             ImGui::EndDragDropSource();
         }
 
@@ -143,23 +144,17 @@ void CanvasContainer::Draw()
     }
 }
 
-void CanvasContainer::DrawTree(const bool in_new_window) const
+void CanvasContainer::DrawTree() const
 // RECURSION VERY SCARY!!!!!!!!!!!!!
 {
-    if(in_new_window) {
-        std::string window_name = "Canvas Tree View##";
-        window_name += std::to_string(m_UUID);
-        ImGui::Begin(window_name.c_str());
-    }
-    for(const auto& component : ImStructs)
+    for (const auto& component : ImStructs)
     {
-        ImGui::PushID(&component);
-        component->DrawTree();
-        ImGui::PopID();
-    }
-
-    if(in_new_window) {
-        ImGui::End();
+        if(ImGui::TreeNode(component->Label.c_str()))
+        {
+            ImGui::PushID(&component);
+            component->DrawTree();
+            ImGui::PopID();
+        }
     }
 }
 
@@ -176,9 +171,9 @@ void CanvasContainer::CompileCPP() const
     file << "void Gui() {" << std::endl;
     
     // iterate through the canvas
-    for(size_t i = 0; i < ImStructs.size(); i++)
+    for (const auto& ImStruct : ImStructs)
     {
-        file << "\t" << ImStructs[i]->Compile() << std::endl;          // TODO: Make this recursive
+        file << "\t" << ImStruct->Compile() << std::endl;
     }
 
     file << "}" << std::endl;
@@ -213,7 +208,7 @@ void CanvasContainer::Deserialise(std::string string, ReMi::Editor& editor)
         assert(component && "Component not found in editor");
         component->ActiveIn = &editor;
         component->Deserialise(param);
-        ImStructs.emplace_back(component.release());
+        ImStructs.push_back(std::move(component));
     }
 }
 

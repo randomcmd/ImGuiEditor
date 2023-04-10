@@ -26,10 +26,19 @@ namespace ImStructs
 
     void ImStructComponent::PreDraw()
     {
+        FallBackLabel = Label.c_str();
         CursorTemp = ImGui::GetCursorPos();
         if (ComponentFlags & ComponentFlags_OverridePosition)
         {
             ImGui::SetCursorPos(Position);
+        }
+        if (Width != 0.0f)
+        {
+            ImGui::SetNextItemWidth(Width);
+        }
+        if (ComponentFlags & ComponentFlags_SameLine)
+        {
+            ImGui::SameLine();
         }
     }
 
@@ -43,24 +52,14 @@ namespace ImStructs
 
     void ImStructComponent::Draw()
     {
-        if (Width != 0.0f)
-        {
-            ImGui::SetNextItemWidth(Width);
-        }
-        if (ComponentFlags & ComponentFlags_SameLine)
-        {
-            ImGui::SameLine();
-        }
-        FallBackLabel = Label.c_str();
     }
 
     void ImStructComponent::PostDraw()
     {
-        // if(CanvasFlags == CanvasFlags_Clicked)
-        // {
-        //     // draw a rect around the last component
-        //     ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IM_COL32(255, 255, 255, 255));
-        // }
+        if(!CustomClickBehaviour) {
+            if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
+            if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
+        }
         if (ComponentFlags & ComponentFlags_OverridePosition)
         {
             constexpr auto padding = 3.0f;
@@ -99,6 +98,10 @@ namespace ImStructs
     {
         ImGui::TextUnformatted(Label.c_str());
         ImGui::InputText("Label", &Label);
+        if (Label.length() == 0)
+        {
+            Label = "default";
+        }
         ImGui::SameLine();
         if (ImGui::Button("X"))
         {
@@ -109,33 +112,27 @@ namespace ImStructs
         {
             CanvasFlags |= CanvasFlags_Delete;
         }
-        if (Label.length() == 0)
-        {
-            Label = "default";
-        }
         ImGui::DragFloat("Width", &Width, 1, 500);
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip("Width (only on some components) using ImGui::SetNextItemWidth(width)");
         }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Width (only on some components) using ImGui::SetNextItemWidth(width)");
+        }
         ImGui::DragFloat2("Position Override", &Position.x, 1, 500);
-        ImGui::SameLine();
-        if (ImGui::CheckboxFlags("Override", &ComponentFlags, ComponentFlags_OverridePosition))
+        if (ImGui::CheckboxFlags("Override Position", &ComponentFlags, ComponentFlags_OverridePosition))
         {
             if (Position.x == 0 && Position.y == 0)
             {
                 Position = CursorTemp;
             }
         }
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip("Width (only on some components) using ImGui::SetNextItemWidth(width)");
-        }
-
+        
         // same line bool that changes the component flags
         ImGui::CheckboxFlags("Same Line", &ComponentFlags, ComponentFlags_SameLine);
-        ImGui::CheckboxFlags("Override Position", &ComponentFlags, ComponentFlags_OverridePosition);
-        ImGui::Text("Component Flags %s", std::bitset<8>(ComponentFlags).to_string().c_str());
+        ImGui::Text("Component Flags 0x%s", std::bitset<8>(ComponentFlags).to_string().c_str());
 
         static std::string serialised = "";
         /*
@@ -149,6 +146,28 @@ namespace ImStructs
         }
         ImGui::Text("Serialised: %s", serialised.c_str());
         */
+    }
+
+    void ImStructComponent::DrawTree()
+    {
+        // create an imgui table that contains component flags and canvas flags so the row is text and flags
+        if(ImGui::BeginTable("##Flags", 2, ImGuiTableFlags_NoBordersInBody))
+        {
+            const std::bitset<8> component_flags(ComponentFlags);
+            const std::bitset<8> canvas_flags(CanvasFlags);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("Component Flags");
+            ImGui::TableNextColumn();
+            ImGui::Text("0x%s", component_flags.to_string().c_str());
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("Canvas Flags");
+            ImGui::TableNextColumn();
+            ImGui::Text("0x%s", canvas_flags.to_string().c_str());
+            ImGui::EndTable();
+        }
+        ImGui::TreePop();
     }
 
     std::string ImStructComponent::Serialise() const

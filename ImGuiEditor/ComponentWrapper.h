@@ -71,6 +71,8 @@ namespace ImStructs
                 }
                 apply();
             }
+            if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
+            if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         }
 
         result_type apply()
@@ -194,7 +196,7 @@ namespace ImStructs
             }, Arguments);
         }
 
-        //private: TODO: make this private as soon as sandbox is about something else
+    private:
         F Function;
         std::tuple<Args...> Arguments;
     };

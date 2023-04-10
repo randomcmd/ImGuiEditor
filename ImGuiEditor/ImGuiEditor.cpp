@@ -10,11 +10,13 @@
 
 #include "Editor.h"
 #include "imgui/FreeTypeTest.h"
+#include "misc/freetype/imgui_freetype.h"
 
 // CHANGE THE IMCONFIG TO INCLUDE THE FOLLOWING PREPROCESSOR DEFINITIONS
 #define IMGUI_ENABLE_FREETYPE
 #define IMGUI_ENABLE_STB_TRUETYPE
 #define IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_USE_WCHAR32
 
 int main()
 {
@@ -35,62 +37,50 @@ int main()
 
     // Setup ImGui binding
     ImGui::CreateContext();
-    
+
     // enable dockspace
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    
+
     // Loading fonts
-    io.Fonts->AddFontFromFileTTF("C:\\Users\\mailr\\Workspace\\best programming language\\ImGuiEditor\\ImGuiEditor\\resources\\Inter-Regular.ttf", 16.0f);
-    static ImWchar ranges[] = { static_cast<ImWchar>(0x1), static_cast<ImWchar>(0x1FFFF), static_cast<ImWchar>(0) };
+    io.Fonts->AddFontDefault();
+    const auto inter = io.Fonts->AddFontFromFileTTF(R"(resources\Inter-Regular.ttf)", 16.0f);
+    static ImWchar ranges[] = {static_cast<ImWchar>(0x1), static_cast<ImWchar>(0x1FFFF), static_cast<ImWchar>(0)};
     static ImFontConfig cfg;
     cfg.OversampleH = cfg.OversampleV = 1;
     cfg.MergeMode = true;
     cfg.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_LoadColor;
-    io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\seguiemj.ttf", 16.0f, &cfg, ranges);
-    
+    io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\seguiemj.ttf)", 16.0f, &cfg, ranges);
+    io.FontDefault = inter;
+
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
     
-    // Setup style
-    //ImGui::StyleColorsDark();
-    //ImGui::GetStyle() = ReMi::RenewedStyle();
-    //ImGui::GetStyle() = ReMi::VisualStudioRounded();
-    
-    static glm::vec3 clear_color = {32.0/255.0, 32.0/255.0, 32.0/255.0};
+    const glm::vec3 clear_color = {32.0 / 255.0, 32.0 / 255.0, 32.0 / 255.0};
     glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
 
     ReMi::Editor editor;
-    FreeTypeTest free_type_test;
 
-    auto default_plugin_path = "DefaultComponents.dll";
-    editor.LoadPlugin(default_plugin_path);
-    
     // Main loop
-    while(!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
         glViewport(0, 0, 1500, 1000);
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
         // setup imgui that can close the window
-        if(free_type_test.PreNewFrame())
-        {
-            ImGui_ImplOpenGL3_DestroyDeviceObjects();
-            ImGui_ImplOpenGL3_CreateDeviceObjects();
-        }
+        editor.PreNewFrame();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        free_type_test.ShowFontsOptionsWindow();
-        ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+        const ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dockspace_flags);
-        
+
         editor.Render();
-        
+
         ImGui::Render();
-        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             auto glfwContext = glfwGetCurrentContext();
             ImGui::UpdatePlatformWindows();
@@ -106,6 +96,6 @@ int main()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
-    
+
     return 0;
 }

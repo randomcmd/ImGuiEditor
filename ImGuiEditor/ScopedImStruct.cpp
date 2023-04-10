@@ -4,38 +4,57 @@
 
 namespace ImStructs
 {
-    ScopedImStruct::ScopedImStruct(ImStructComponent* begin, ImStructComponent* end) : Begin(begin), End(end) {}
+    ScopedImStruct::ScopedImStruct(ImStructComponent* begin, ImStructComponent* end) : Begin(begin), End(end)
+    {
+        Canvas.m_ActiveIn = this;
+    }
 
     void ScopedImStruct::Draw()
     {
-        ImStructComponent::Draw();
         Begin->Draw();
-
+        if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
+        if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
+        
         if (!CallEndOnlyIfBeginReturnsTrue) // LEGACY JUST CALLS THE DRAW EVEN IF BEGIN DOESN'T RETURN TRUE
         {
             Canvas.Draw();
-            ImGui::SameLine();
-            ImGui::SmallButton("Edit Scoped Struct"); // TODO: FIX THIS editing is broken for components that house multiple draw calls and "just drawing a child" doesn't work since the size is not obvious upfront
             End->Draw();
             return;
         }
         if (Begin && Begin->DrawReturn)
         {
             Canvas.Draw();
-            ImGui::SameLine();
-            ImGui::SmallButton("Edit Scoped Struct");
             End->Draw();
         }
     }
 
     void ScopedImStruct::Editor()
     {
-        ImStructComponent::Editor();
-        ImGui::PushID("##scoped_imstruct_begin");
-        Begin->Editor();
-        ImGui::PopID();
-        
-        if(ImGui::TreeNode("Open Canvas Components")) {
+        ImGui::TextUnformatted(Label.c_str());
+        ImGui::InputText("Label", &Label);
+        if (Label.length() == 0)
+        {
+            Label = "default";
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("X"))
+        {
+            CanvasFlags &= ~CanvasFlags_Clicked;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("DELETE"))
+        {
+            CanvasFlags |= CanvasFlags_Delete;
+        }
+        if(ImGui::TreeNodeEx("Begin", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::PushID("##scoped_imstruct_begin");
+            Begin->Editor();
+            ImGui::PopID();
+            ImGui::TreePop();
+        }
+        if(ImGui::TreeNodeEx("Open Canvas Components", ImGuiTreeNodeFlags_DefaultOpen))
+        {
             // draw editor of all open components
             for (const auto& component : Canvas.ImStructs)
             {
@@ -49,16 +68,16 @@ namespace ImStructs
             }
             ImGui::TreePop();
         }
-        
-        ImGui::Separator();
-        ImGui::PushID("##scoped_imstruct_end");
-        End->Editor();
-        ImGui::PopID();
+        if(ImGui::TreeNodeEx("End", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::PushID("##scoped_imstruct_end");
+            End->Editor();
+            ImGui::PopID();
+            ImGui::TreePop();
+        }
     }
 
     void ScopedImStruct::PreDraw()
     {
-        ImStructComponent::PreDraw();
         Begin->PreDraw();
         if (!CallEndOnlyIfBeginReturnsTrue)
         {
@@ -73,7 +92,6 @@ namespace ImStructs
 
     void ScopedImStruct::PostDraw()
     {
-        ImStructComponent::PostDraw();
         Begin->PostDraw();
         if (!CallEndOnlyIfBeginReturnsTrue)
         {
@@ -88,7 +106,6 @@ namespace ImStructs
 
     void ScopedImStruct::Cleanup()
     {
-        ImStructComponent::Cleanup();
         Begin->Cleanup();
         if (!CallEndOnlyIfBeginReturnsTrue)
         {
@@ -103,27 +120,19 @@ namespace ImStructs
 
     void ScopedImStruct::DrawTree()
     {
-        if(ImGui::TreeNode(Label.c_str()))
-        {
-            const std::bitset<8> component_flags(ComponentFlags);
-            const std::bitset<8> canvas_flags(CanvasFlags);
-            ImGui::Text("Component Flags: 0x%s", component_flags.to_string().c_str());
-            ImGui::Text("Canvas Flags:    0x%s", canvas_flags.to_string().c_str());
-            if(ImGui::TreeNode("Canvas")) {
-                if(ImGui::BeginDragDropTarget()) {
-                    Canvas.AddDropTargetToCanvas(0);
-                    ImGui::EndDragDropTarget();
-                }
-                Canvas.DrawTree(false);
-                ImGui::TreePop();
+        if(ImGui::TreeNode("Canvas")) {
+            if(ImGui::BeginDragDropTarget()) {
+                Canvas.AddDropTargetToCanvas(0);
+                ImGui::EndDragDropTarget();
             }
+            Canvas.DrawTree();
             ImGui::TreePop();
         }
     }
 
     std::string ScopedImStruct::Compile()
     {
-        std::string code = ImStructComponent::Compile();
+        std::string code;
         if (!CallEndOnlyIfBeginReturnsTrue)
         {
             code += Begin->Compile();

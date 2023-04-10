@@ -24,7 +24,7 @@ public:
 
     ComponentMaps ComponentMaps;
 
-    size_t Hash() const
+    [[nodiscard]] size_t Hash() const
     {
         size_t hash = 0;
         
@@ -38,14 +38,19 @@ public:
             for(auto& [key, value] : ComponentMaps)
             {
                 hash ^= std::hash<std::string>{}(key);
-                for(auto& [key2, value2] : value)
+                for(const auto& [inner_key, inner_value] : value)
                 {
-                    hash ^= std::hash<std::string>{}(key2);
+                    hash ^= std::hash<std::string>{}(inner_key);
                 }
             }
         }
 
         return hash;
+    }
+
+    bool operator==(const Plugin& other) const
+    {
+        return Hash() == other.Hash();
     }
     
     static Plugin* LoadDLL(const std::filesystem::path path)
@@ -60,7 +65,8 @@ public:
 
         // get handle to create function -> Plugin* create()
         const auto create = reinterpret_cast<Plugin* (*)(ImGuiContext* context, ImGuiMemAllocFunc allocFunc, ImGuiMemFreeFunc freeFunc)>(
-        GetProcAddress(h_module, "create"));
+            GetProcAddress(h_module, "create")
+        );
 
         ImGuiMemAllocFunc alloc_func;
         ImGuiMemFreeFunc free_func;
