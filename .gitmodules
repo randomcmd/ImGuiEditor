@@ -1,14 +1,15 @@
-[submodule "glfw"]
+[submodule "GLFW/glfw"]
 	path = GLFW/glfw
 	url = https://github.com/glfw/glfw.git
 	branch = 3.3-stable
-[submodule "imgui"]
+[submodule "imgui/imgui"]
 	path = imgui/imgui
-	url = https://github.com/ocornut/imgui
-[submodule "freetype"]
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "freetype/freetype"]
 	path = freetype/freetype
-	url = https://github.com/freetype/freetype
+	url = https://github.com/freetype/freetype.git
 	branch = 2.6.5
-[submodule "glm"]
+[submodule "glm/glm"]
 	path = glm/glm
-	url = https://github.com/g-truc/glm
+	url = https://github.com/g-truc/glm.git
