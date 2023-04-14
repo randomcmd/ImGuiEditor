@@ -15,7 +15,7 @@ namespace ImStructs {
     using ImStructComponentUPtr =    std::unique_ptr<ImStructComponent>;
     using ScopedImStructUPtr =       std::unique_ptr<ScopedImStruct>;
     // Wrap make_component_wrapper in a ImGuiComponentFactory so that it can easily be saved in a dict for creation of that component
-    using ImGuiComponentFactory = std::function<ImStructComponent*()>;
+    using ImGuiComponentFactory = std::function<ImStruct*()>;
 
     using CanvasFlags = int;
     auto constexpr CanvasFlags_None = 0;
@@ -37,17 +37,7 @@ namespace ImStructs {
         virtual void Draw() = 0;                                                        // Draw the component
         virtual void PostDraw() = 0;                                                    // After drawing the component in the editor things like state syncing or gizmos can be done here WARNING THIS WILL NOT BE COMPILED
         virtual void Editor() = 0;                                                      // Draw editor for component in a separate window created by Editor.cpp
-        virtual void DrawTree()
-        {
-            if(ImGui::TreeNode(Label.c_str()))
-            {
-                const std::bitset<8> component_flags(ComponentFlags);
-                const std::bitset<8> canvas_flags(CanvasFlags);
-                ImGui::Text("Component Flags: 0x%s", component_flags.to_string().c_str());
-                ImGui::Text("Canvas Flags:    0x%s", canvas_flags.to_string().c_str());
-                ImGui::TreePop();
-            }
-        }
+        virtual void DrawTree() = 0;
         bool DrawReturn;                                                                // if draw returns a boolean then place it here
         CanvasFlags CanvasFlags = CanvasFlags_None;
         ComponentFlags ComponentFlags = ComponentFlags_None;
@@ -71,6 +61,7 @@ namespace ImStructs {
         void Draw() override;        
         void PostDraw() override;    
         void Editor() override;
+        void DrawTree() override;
         [[nodiscard]] std::string Serialise() const override;
         void Deserialise(std::string str) override;
         std::string Compile() override;
@@ -79,9 +70,10 @@ namespace ImStructs {
         ImVec2 Position = ImVec2(0.0f, 0.0f);                                     // Override position of component using ImGui::SetCursorPos
         ImVec2 CursorTemp = ImVec2(0.0f, 0.0f);
         bool Held = false;
+        bool CustomClickBehaviour = false;
     };
 
-    struct ScopedImStruct : ImStructComponent
+    struct ScopedImStruct : ImStruct
     {
         std::string Name;
         ImStructUPtr Begin;
@@ -109,6 +101,8 @@ namespace ImStructs {
         {
             ImStructComponent::Draw();
             ImGui::TextUnformatted(TextBuffer.c_str());
+            if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
+            if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         }
 
         void Editor() override
@@ -131,6 +125,8 @@ namespace ImStructs {
         {
             ImStructComponent::Draw();
             ImGui::Button(Label.c_str(), size);
+            if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
+            if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         }
 
         void Editor() override
@@ -164,6 +160,8 @@ namespace ImStructs {
         {
             ImStructComponent::Draw();
             ImGui::InputText(Label.c_str(), &buf, flags, callback, user_data);
+            if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
+            if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         }
 
         void Editor() override

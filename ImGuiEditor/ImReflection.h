@@ -48,7 +48,7 @@ namespace ImReflection
     struct Member
     {
         Type Type;
-        std::string_view Name = "";
+        std::string_view Name;
 
         union
         {

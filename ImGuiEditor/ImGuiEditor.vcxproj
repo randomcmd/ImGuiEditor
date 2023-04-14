@@ -166,6 +166,10 @@
     <ClCompile Include="CanvasData.cpp" />
     <ClCompile Include="compiled.cpp" />
     <ClCompile Include="Compiler.cpp" />
+    <ClCompile Include="DefaultThemes.cpp" />
+    <ClCompile Include="EditorPluginAPI.cpp" />
+    <ClCompile Include="EditorSettings.cpp" />
+    <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="imgui\FreeTypeTest.cpp" />
     <ClCompile Include="ImReflection.cpp" />
     <ClCompile Include="ImStructs.cpp" />
@@ -177,6 +181,9 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="ImGuiEditor.cpp" />
     <ClCompile Include="ImGuiExtension.cpp" />
+    <ClInclude Include="DefaultThemes.h" />
+    <ClInclude Include="EditorSettings.h" />
+    <ClInclude Include="FileDialog.h" />
     <ClInclude Include="imgui\FreeTypeTest.h" />
     <ClInclude Include="ImReflection.h" />
     <ClInclude Include="ImSerialise.h" />
