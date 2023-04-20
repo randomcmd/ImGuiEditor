@@ -133,19 +133,6 @@ namespace ImStructs
         // same line bool that changes the component flags
         ImGui::CheckboxFlags("Same Line", &ComponentFlags, ComponentFlags_SameLine);
         ImGui::Text("Component Flags 0x%s", std::bitset<8>(ComponentFlags).to_string().c_str());
-
-        static std::string serialised = "";
-        /*
-        if(ImGui::Button("Serialise (ImStructComponent)"))
-        {
-            serialised = ImStructComponent::Serialise();
-        }
-        if(ImGui::Button("Deserialise (ImStructComponent)"))
-        {
-            ImStructComponent::Deserialise(serialised);
-        }
-        ImGui::Text("Serialised: %s", serialised.c_str());
-        */
     }
 
     void ImStructComponent::DrawTree()
