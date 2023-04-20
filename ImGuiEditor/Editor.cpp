@@ -23,6 +23,11 @@ using ImStructs::ImStructComponent;
 
 ReMi::Editor::Editor()
 {
+    // TODO: TEMPORARY FIX
+    static ImStructComponent editor_manager;
+    editor_manager.ActiveIn = this;
+    
+    m_Canvas.ActiveIn = &editor_manager;
     m_EditorSettings.LoadFromFile("Settings.lay");
     ApplySettings();
     const auto default_plugin_path = "DefaultComponents.dll";

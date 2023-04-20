@@ -1,10 +1,14 @@
 ﻿#pragma once
 #include <functional>
 
-#include "ComponentWrapper.h"
 #include "EditorSettings.h"
 #include "imgui/FreeTypeTest.h"
 #include "plugin/Plugin.h"
+
+namespace ReMi
+{
+    class Editor;
+}
 
 namespace ImStructs
 {

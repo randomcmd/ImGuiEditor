@@ -5,6 +5,15 @@
 #include <vector>
 #include "imgui.h"
 
+namespace ImStructs
+{
+    struct ImStruct;
+    using CanvasFlags = int;
+    using ComponentFlags = int;
+    using ImStructUPtr = std::unique_ptr<ImStruct>;
+}
+
+
 namespace CompilerFramework
 {
     class Compiler;
@@ -15,23 +24,14 @@ namespace ReMi
     class Editor;
 }
 
-namespace ImStructs
-{
-    struct ImStruct;
-    struct ImStructComponent;
-    struct ScopedImStruct;
-    using CanvasFlags = int;
-    using ComponentFlags = int;
-}
-
 class CanvasContainer
 {
 public:
     explicit CanvasContainer();
 
-    std::vector<std::unique_ptr<ImStructs::ImStruct>> ImStructs;
+    std::vector<ImStructs::ImStructUPtr> ImStructs;
     std::optional<ImGuiStyle> m_ImGuiStyle;
-    ImStructs::ImStruct* m_ActiveIn;
+    ImStructs::ImStruct* ActiveIn = nullptr;
     
     bool CanvasDropTarget(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
     void AddDropTargetToCanvas(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
