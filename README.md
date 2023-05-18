@@ -1,11 +1,11 @@
 # ImGuiEditor (Name Not Final)
-ImGuiEditor is a visual editor for Dear ImGui. Browse through all the available components and drag them onto the canvas. Rearrange components, edit them and when done easily compile them to a C++ file to integrate into your own project! Missing components from a library? Check out how to add them via the [Plugin System](#plugin-system) 
+ImGuiEditor is a visual editor for Dear ImGui. Browse through all the available components and drag them onto the canvas. Rearrange components, edit and then easily compile them to a C++ file to integrate into your own project! Missing components from a library? Check out how to add them via the [Plugin System](#plugin-system) 
 
 ![Screenshot of the program](https://github.com/randomcmd/ImGuiEditor/blob/3cf52db7023e617faef0b00c5b6969a78a200f79/example.png)
 
 ## Features
 - Drag and drop most ImGui components
-- Rapidly prototype
+- Rapid prototyping
 - Save files as layout files and open them later!
 - Compile to your favorite language (C++ support only for now)
 - Load plugins for third party libraries
@@ -30,4 +30,4 @@ inline ImStructs::ImGuiComponentFactory* ColoredButtonV1 = new ImStructs::ImGuiC
 ```
 Check out the [DefaultComponent](DefaultComponents/) library shipped with the editor to get an idea of how plugins are written! Feel free to notify us about any libraries you have integrated into ImGuiEditor and we might make a page of third party plugins!
 
-:warning: **Pllugin API very experimental**: The API for defining plugins is not final will change!
+:warning: **Pllugin API very experimental**: The API for defining plugins is not final and will change!
