@@ -2,16 +2,18 @@
 #include <algorithm>
 #include "imgui.h"
 #include <iostream>
-#include <numeric>
 #include <optional>
 #include <sstream>
 #include <stack>
 #include <string>
+#include "ImString.h"
 
 inline void ImDeserialise(std::stringstream& is)                                              { }
 inline void ImDeserialise(std::stringstream& is, char& value)                                 { is >> value; }
 inline void ImDeserialise(std::stringstream& is, int& value)                                  { is >> value; }
 inline void ImDeserialise(std::stringstream& is, int*& value)                                 { is >> *value; }
+inline void ImDeserialise(std::stringstream& is, unsigned int& value)                         { is >> value; }
+inline void ImDeserialise(std::stringstream& is, unsigned int*& value)                        { is >> *value; }
 inline void ImDeserialise(std::stringstream& is, long& value)                                 { is >> value; }
 inline void ImDeserialise(std::stringstream& is, float& value)                                { is >> value; }
 inline void ImDeserialise(std::stringstream& is, float*& value)                               { is >> *value; }
@@ -19,8 +21,6 @@ inline void ImDeserialise(std::stringstream& is, double& value)                 
 inline void ImDeserialise(std::stringstream& is, double*& value)                              { is >> *value; }
 inline void ImDeserialise(std::stringstream& is, bool& value)                                 { is >> value; }
 inline void ImDeserialise(std::stringstream& is, bool*& value)                                { is >> *value; }
-inline void ImDeserialise(std::stringstream& is, char*& value)                                { is >> *value; }
-inline void ImDeserialise(std::stringstream& is, ImU32& value)                                { is >> value; }
 inline void ImDeserialise(std::stringstream& is, nullptr_t& value)                            { value = nullptr; }
 inline void ImDeserialise(std::stringstream& is, ImGuiInputTextCallbackData& value)           { value = ImGuiInputTextCallbackData(); }
 inline void ImDeserialise(std::stringstream& is, ImGuiInputTextCallback& value)               { value = nullptr; }
@@ -49,6 +49,10 @@ inline std::string* FirstString(std::stringstream& is) // This might leak value 
     return new_string;
 }
 
+inline void ImDeserialise(std::stringstream& is, ImString& value)
+{
+    value = ImString(*FirstString(is));
+}
 inline void ImDeserialise(std::stringstream& is, const char*& value)
 {
     const auto new_string = FirstString(is);
@@ -62,9 +66,10 @@ inline void ImDeserialise(std::stringstream& is, std::string*& value)
 {
     value = FirstString(is);
 }
-inline void ImDeserialise(std::stringstream& is, ImVec2& value)
+inline void ImDeserialise(std::stringstream& is, const ImVec2& value)
 {
-    is >> value.x >> value.y;
+    const auto non_const_value = const_cast<ImVec2*>(&value);
+    is >> non_const_value->x >> non_const_value->y;
 }
 inline void ImDeserialise(std::stringstream& is, ImVec4& value)
 {
@@ -79,6 +84,8 @@ inline void ImSerialise(std::stringstream& os)                                  
 inline void ImSerialise(std::stringstream& os, char value)                                 { os << value; }
 inline void ImSerialise(std::stringstream& os, int value)                                  { os << value; }
 inline void ImSerialise(std::stringstream& os, int* value)                                 { os << *value; }
+inline void ImSerialise(std::stringstream& os, unsigned int value)                         { os << value; }
+inline void ImSerialise(std::stringstream& os, unsigned int* value)                        { os << *value; }
 inline void ImSerialise(std::stringstream& os, long value)                                 { os << value; }
 inline void ImSerialise(std::stringstream& os, float value)                                { os << value; }
 inline void ImSerialise(std::stringstream& os, float* value)                               { os << *value; }
@@ -87,13 +94,13 @@ inline void ImSerialise(std::stringstream& os, double* value)                   
 inline void ImSerialise(std::stringstream& os, bool value)                                 { os << value; }
 inline void ImSerialise(std::stringstream& os, bool* value)                                { os << *value; }
 inline void ImSerialise(std::stringstream& os, char* value)                                { os << *value; }
+inline void ImSerialise(std::stringstream& os, ImString value)                             { os << "\""<< value << "\""; }
 inline void ImSerialise(std::stringstream& os, const char* value)                          { std::string new_string = value; os << '\"' << value << '\"'; } // TODO: Add escape characters
 inline void ImSerialise(std::stringstream& os, std::string value)                          { os << "\""<< value << "\""; }
 inline void ImSerialise(std::stringstream& os, std::string* value)                         { os << "\""<< *value << "\""; }
 inline void ImSerialise(std::stringstream& os, ImVec2 value)                               { os << value.x << " " << value.y; }
 inline void ImSerialise(std::stringstream& os, ImVec4 value)                               { os << value.x << " " << value.y << " " << value.z << " " << value.w; }
 inline void ImSerialise(std::stringstream& os, ImColor value)                              { os << value.Value.x << " " << value.Value.y << " " << value.Value.z << " " << value.Value.w; }
-inline void ImSerialise(std::stringstream& os, ImU32 value)                                { os << value; }
 inline void ImSerialise(std::stringstream& os, nullptr_t value)                            { os << "nullptr"; }
 inline void ImSerialise(std::stringstream& os, ImGuiInputTextCallbackData value)           { os << "ImGuiInputTextCallbackData()"; }
 inline void ImSerialise(std::stringstream& os, ImGuiInputTextCallback value)               { os << "nullptr"; }

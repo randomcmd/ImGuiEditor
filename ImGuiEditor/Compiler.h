@@ -29,7 +29,6 @@ namespace CompilerFramework
     struct CodeFile
     {
         virtual ~CodeFile() = default;
-        //std::vector<Imports> Imports;
         std::vector<CodeChunk*> GlobalBuffers;
         std::vector<Method*> Methods;
         [[nodiscard]] virtual std::string FullyCompile() const { return ""; }

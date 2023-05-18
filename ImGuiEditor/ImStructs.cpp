@@ -8,7 +8,7 @@ namespace ImStructs
 {
     std::string ImStruct::Serialise() const
     {
-        return "ImStruct(\"" + Label + "\")";
+        return "ImStruct(\"" + EditorLabel + "\")";
     }
 
     void ImStruct::Deserialise(std::string str)
@@ -16,7 +16,7 @@ namespace ImStructs
         const ImSerialisation::Call call(str);
         assert(call.Params.size() == 1 && "ImStruct::Deserialise incorrect number of arguments (only takes label)");
         auto ss = std::stringstream(call.Params[0]);
-        ImDeserialise(ss, Label);
+        ImDeserialise(ss, EditorLabel);
     }
 
     std::string ImStruct::Compile()
@@ -26,7 +26,6 @@ namespace ImStructs
 
     void ImStructComponent::PreDraw()
     {
-        FallBackLabel = Label.c_str();
         CursorTemp = ImGui::GetCursorPos();
         if (ComponentFlags & ComponentFlags_OverridePosition)
         {
@@ -69,8 +68,7 @@ namespace ImStructs
             {
                 ImGui::SetItemAllowOverlap();
                 ImGui::SetCursorPos(Position);
-                //ImGui::InvisibleButton("##move_button", ImVec2(ImGui::GetItemRectSize().x, ImGui::GetItemRectSize().y));
-                ImGui::InvisibleButton(FallBackLabel, ImVec2(ImGui::GetItemRectSize().x, ImGui::GetItemRectSize().y));
+                ImGui::InvisibleButton(EditorLabel.c_str(), ImVec2(ImGui::GetItemRectSize().x, ImGui::GetItemRectSize().y));
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -83,7 +81,7 @@ namespace ImStructs
             }
             if (Held)
             {
-                ImGui::SetTooltip("Moving component %s", Label.c_str());
+                ImGui::SetTooltip("Moving component %s", EditorLabel.c_str());
                 Position += ImGui::GetIO().MouseDelta;
                 Held = true;
             }
@@ -96,11 +94,11 @@ namespace ImStructs
 
     void ImStructComponent::Editor()
     {
-        ImGui::TextUnformatted(Label.c_str());
-        ImGui::InputText("Label", &Label);
-        if (Label.length() == 0)
+        ImGui::TextUnformatted(EditorLabel.c_str());
+        ImGui::InputText("Label", &EditorLabel);
+        if (EditorLabel.length() == 0)
         {
-            Label = "default";
+            EditorLabel = "default";
         }
         ImGui::SameLine();
         if (ImGui::Button("X"))
@@ -112,7 +110,7 @@ namespace ImStructs
         {
             CanvasFlags |= CanvasFlags_Delete;
         }
-        ImGui::DragFloat("Width", &Width, 1, 500);
+        ImGui::DragFloat("Width", &Width, 1);
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip("Width (only on some components) using ImGui::SetNextItemWidth(width)");
@@ -162,7 +160,7 @@ namespace ImStructs
         std::stringstream ss;
         
         ss << "ImStructComponent(";
-        ImSerialise(ss, Label); ss << ", ";
+        ImSerialise(ss, EditorLabel); ss << ", ";
         ImSerialise(ss, ComponentFlags); ss << ", ";
         ImSerialise(ss, Width); ss << ", ";
         ImSerialise(ss, Position); ss << ")";
@@ -179,7 +177,7 @@ namespace ImStructs
             ss << str.substr(18, str.length() - 2);
         }
         
-        ImDeserialise(ss, Label);
+        ImDeserialise(ss, EditorLabel);
         ImDeserialise(ss, ComponentFlags);
         ImDeserialise(ss, Width);
         ImDeserialise(ss, Position);

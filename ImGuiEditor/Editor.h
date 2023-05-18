@@ -5,11 +5,6 @@
 #include "imgui/FreeTypeTest.h"
 #include "plugin/Plugin.h"
 
-namespace ReMi
-{
-    class Editor;
-}
-
 namespace ImStructs
 {
     struct ScopedImStruct;
@@ -60,13 +55,13 @@ using ScopedImStructUPtr =       std::unique_ptr<ImStructs::ScopedImStruct>;
  * [0] New Component window that can also shows all the components
  * [0] Component Search
  * [1] Editable Theme?
- * [0] Improved drag and drop (I don't have a piss kink remove the yellow pls)
+ * [1] Improved drag and drop (I don't have a piss kink remove the yellow pls)
  * [0] Improved override position? Snap to grid? Implement in ImStructComponent only?
  * [0.99] Better font and emotes pls I want pensive :pensive:
- * [0] Hello World Window
- * [0.5] Settings Window and Saving
+ * [1] Hello World Window
+ * [1] Settings Window and Saving
  * [1] Opening Files and Plugins and Saving Files
- * [0] Integrate Editor Label
+ * [1] Integrate Editor Label
  * [0] Error API
  *
  * General Code Style and Feature Usage:
@@ -80,24 +75,22 @@ namespace ReMi
 {
     class Editor
     {
-    public:
+    public: // Backend API to render editor
         Editor();
+        
         void PreNewFrame();
         void Render();
-        void LoadPlugin(std::filesystem::path path);
-        void UnloadPlugin(Plugin& plugin);
-
+        
         // Editor Plugin API
         [[nodiscard]] ImStructUPtr TemporaryConstructFromName(const std::string& name) const; // TODO: Temporary because it doesn't take into consideration hash and potential revamp of plugin system
-
-        void OpenProjectFromPath(std::filesystem::path path);
-        void AddComponent(ImStructUPtr component);
         size_t ComponentID();
 
         // Temporary fix for native ImGui Style Editor
         static constexpr bool override_color_scheme = true;
 
     private:
+        // Windows
+        void HelloWorldWindow();
         void EditorWindow();
         void ComponentWindow(bool* open = nullptr);
         void CompileWindow() const;
@@ -107,6 +100,11 @@ namespace ReMi
         void RightClickMenu();
         void VoidWindow();
         void Canvas();
+
+        // Private API
+        void LoadPlugin(std::filesystem::path path);
+        void UnloadPlugin(Plugin& plugin);
+        void OpenProjectFromPath(std::filesystem::path path);
         
         void ComponentButton(std::string_view label, const ImStructs::ImGuiComponentFactory* factory);
         

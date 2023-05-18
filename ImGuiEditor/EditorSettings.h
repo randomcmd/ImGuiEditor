@@ -11,6 +11,7 @@ namespace ReMi {
         
         std::map<std::string, bool> OpenWindows =
         {
+            {"Hello World Window", true},
             {"Editor Window", true},
             {"Component Window", true},
             {"Compile Window", true},
@@ -20,7 +21,7 @@ namespace ReMi {
             {"Hello World Window", true}
         };
 
-        std::vector<std::filesystem::path> LastOpenedProjects;
+        std::vector<std::filesystem::path> LastOpenedProjects = { R"(resources\Sample Save Files\defaults_smol_brother.lay)" };
         size_t MaxLastOpenedProjects = 10;
 
         void AddProjectOpen(std::filesystem::path path);

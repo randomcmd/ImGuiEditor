@@ -187,6 +187,7 @@
     <ClInclude Include="imgui\FreeTypeTest.h" />
     <ClInclude Include="ImReflection.h" />
     <ClInclude Include="ImSerialise.h" />
+    <ClInclude Include="ImString.h" />
     <ClInclude Include="plugin\Plugin.h" />
     <ClInclude Include="Target.h" />
   </ItemGroup>
@@ -199,6 +200,7 @@
     <ClInclude Include="ImStructs.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="imgui.ini" />
     <Content Include="laylang" />
     <Content Include="resources\Inter-Black.ttf" />
     <Content Include="resources\Inter-Bold.ttf" />
@@ -210,6 +212,7 @@
     <Content Include="resources\Inter-SemiBold.ttf" />
     <Content Include="resources\Inter-Thin.ttf" />
     <Content Include="resources\NotoSans-Regular.ttf" />
+    <Content Include="Settings.lay" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\glad\glad.vcxproj">
