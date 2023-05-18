@@ -1,4 +1,3 @@
-#include "CanvasWindow.h"
 #include "ImGuiExtension.h"
 
 ImString operator ""_im(const char* literal, size_t size)
