@@ -40,8 +40,8 @@ void CanvasContainer::AddDropTargetToCanvas(const size_t i, const ImStructs::Can
         auto component = construct();
         component->ComponentFlags = component_flags;
         component->CanvasFlags = canvas_flags;
-        component->ActiveIn = m_ActiveIn->ActiveIn;
-        component->Label += std::format("##{}", m_ActiveIn->ActiveIn->ComponentID());
+        component->ActiveIn = ActiveIn->ActiveIn;
+        component->Label += std::format("##{}", ActiveIn->ActiveIn->ComponentID());
         const auto iterator = ImStructs.begin() + static_cast<long long>(i);
         ImStructs.emplace(iterator, component);
     }

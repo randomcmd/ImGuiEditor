@@ -9,22 +9,33 @@
 namespace ImStructs
 {
     // Takes in a value and returns a compiled function argument TODO: overhaul his
+
+    inline std::string FormatFloat(float value)
+    {
+        return std::format("{}f", value);
+    }
+
+    inline std::string FormatDouble(double value)
+    {
+        return std::format("{}d", value);
+    }
+    
     inline std::string ArgumentToString(const char value)          { return std::to_string(value); }
     inline std::string ArgumentToString(const int value)           { return std::to_string(value); }
-    inline std::string ArgumentToString(const int* value)          { return "new int(" + std::to_string(*value) + ")"; }
+    inline std::string ArgumentToString(const int* value)          { return "new int(" + std::format("{}", *value) + ")"; }
     inline std::string ArgumentToString(const long value)          { return std::to_string(value); }
-    inline std::string ArgumentToString(const float value)         { return std::to_string(value) + "f"; }
-    inline std::string ArgumentToString(const float* value)        { return "new float(" + std::to_string(*value) + "f)"; }
+    inline std::string ArgumentToString(const float value)         { return FormatFloat(value); }
+    inline std::string ArgumentToString(const float* value)        { return "new float(" + FormatFloat(*value) + ")"; }
     inline std::string ArgumentToString(const double value)        { return std::to_string(value); }
-    inline std::string ArgumentToString(const double* value)       { return "new double(" + std::to_string(*value) + "d)"; }
+    inline std::string ArgumentToString(const double* value)       { return "new double(" + FormatDouble(*value) + ")"; }
     inline std::string ArgumentToString(const bool value)          { return value ? "true" : "false"; }
     inline std::string ArgumentToString(const bool* value)         { return "new bool(" + std::to_string(*value) + ")"; }
     inline std::string ArgumentToString(const char* value)         { return "\"" + std::string(value) + "\""; }
     inline std::string ArgumentToString(const std::string& value)  { return "\"" + value + "\""; }
     inline std::string ArgumentToString(const std::string* value)  { return "new std::string(\"" + *value + "\")"; }
-    inline std::string ArgumentToString(const ImVec2& value)       { return "ImVec2(" + std::to_string(value.x) + "f, " + std::to_string(value.y) + "f)"; }
-    inline std::string ArgumentToString(const ImVec4& value)       { return "ImVec4(" + std::to_string(value.x) + "f, " + std::to_string(value.y) + "f, " + std::to_string(value.z) + "f, " + std::to_string(value.w) + "f)"; }
-    inline std::string ArgumentToString(const ImColor& value)      { return "ImColor(" + std::to_string(value.Value.x) + "f, " + std::to_string(value.Value.y) + "f, " + std::to_string(value.Value.z) + "f, " + std::to_string(value.Value.w) + "f)"; }
+    inline std::string ArgumentToString(const ImVec2& value)       { return "ImVec2(" + FormatFloat(value.x) + ", " + FormatFloat(value.y) + ")"; }
+    inline std::string ArgumentToString(const ImVec4& value)       { return "ImVec4(" + FormatFloat(value.x) + ", " + FormatFloat(value.y) + ", " + FormatFloat(value.z) + ", " + FormatFloat(value.w) + ")"; }
+    inline std::string ArgumentToString(const ImColor& value)      { return "ImColor(" + FormatFloat(value.Value.x) + ", " + FormatFloat(value.Value.y) + ", " + FormatFloat(value.Value.z) + ", " + FormatFloat(value.Value.w) + ")"; }
     inline std::string ArgumentToString(const ImU32& value)        { return "ImU32(" + std::to_string(value) + ")"; }
     inline std::string ArgumentToString(const nullptr_t value)     { return "nullptr /*nullptr_t*/"; }
 
