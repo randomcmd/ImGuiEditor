@@ -187,6 +187,7 @@
     <ClInclude Include="imgui\FreeTypeTest.h" />
     <ClInclude Include="ImReflection.h" />
     <ClInclude Include="ImSerialise.h" />
+    <ClInclude Include="ImString.h" />
     <ClInclude Include="plugin\Plugin.h" />
     <ClInclude Include="Target.h" />
   </ItemGroup>
