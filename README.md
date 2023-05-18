@@ -1,7 +1,7 @@
 # ImGuiEditor (Name Not Final)
 ImGuiEditor is a visual editor for Dear ImGui. Browse through all the available components and drag them onto the canvas. Rearrange components, edit them and when done easily compile them to a C++ file to integrate into your own project! Missing components from a library? Check out how to add them via the [Plugin System](#plugin-system) 
 
-![Screenshot of the program](https://i.ibb.co/ctJpNDp/screenshot.png)
+![Screenshot of the program](https://github.com/randomcmd/ImGuiEditor/blob/3cf52db7023e617faef0b00c5b6969a78a200f79/example.png)
 
 ## Features
 - Drag and drop most ImGui components
