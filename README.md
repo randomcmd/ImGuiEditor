@@ -2,11 +2,12 @@
 ImGuiEditor is a visual editor for Dear ImGui. Browse through all the available components and drag them onto the canvas. Rearrange components, edit them and when done easily compile them to a C++ file to integrate into your own project! Missing components from a library? Check out how to add them via the [Plugin System](#plugin-system) 
 
 ## Features
-- Most of the basic ImGui components are implemented
-- Drag and drop
-- Different Themes: Renewed, [Visual Studio](https://github.com/Patitotective/ImThemes) and ImGui dark, light and classic
+- Drag and drop most ImGui components
+- Rapidly prototype
 - Save files as layout files and open them later!
 - Compile to your favorite language (C++ support only for now)
+- Load plugins for third party libraries
+- Different Themes: Renewed, [Visual Studio](https://github.com/Patitotective/ImThemes) and ImGui dark, light and classic
 
 ## Plugin System
 Need a component from a third party library? Easily integrate a component just under 10 lines of code! Compile your Plugin to a dll file and just load it to access your custom components! 
