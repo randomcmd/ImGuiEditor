@@ -12,12 +12,12 @@ namespace ImStructs
 
     inline std::string FormatFloat(float value)
     {
-        return std::format("{}f", value);
+        return std::format("{}", value);
     }
 
     inline std::string FormatDouble(double value)
     {
-        return std::format("{}d", value);
+        return std::format("{}", value);
     }
     
     inline std::string ArgumentToString(const char value)          { return std::to_string(value); }
@@ -54,15 +54,7 @@ namespace ImStructs
         std::vector<std::string> ArgumentNames;
         using result_type = std::invoke_result_t<F, Args...>;
     
-        ComponentWrapper(F&& f, Args&&... args) : Function(std::forward<F>(f)), Arguments(std::forward<Args>(args)...)
-        {
-            // if the first argument is a c string, use it as the label
-            // since the label is actually defined in ImStruct we point the first argument to the label
-            // this is a bit hacky but it works (thanks copilot)
-            // if constexpr (std::tuple_size_v<decltype(Arguments)>> 0 && std::is_same_v<const char*, std::decay_t<decltype(std::get<0>(Arguments))>>) {
-            //     std::get<0>(Arguments) = FallBackLabel;
-            // }
-        }
+        ComponentWrapper(F&& f, Args&&... args) : Function(std::forward<F>(f)), Arguments(std::forward<Args>(args)...) {}
 
         void Draw() override
         {
@@ -73,13 +65,6 @@ namespace ImStructs
                 Function();
             }
             else {
-                // if first args is a const char pointer
-                if constexpr (std::tuple_size_v<decltype(Arguments)>> 0 && std::is_same_v<const char*, std::decay_t<decltype(std::get<0>(Arguments))>>) {
-                    if(FallBackLabel)
-                    {
-                        std::get<0>(Arguments) = FallBackLabel;
-                    }
-                }
                 apply();
             }
             if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
@@ -117,20 +102,7 @@ namespace ImStructs
                     (EditorHelper(ArgumentNames[i++], &args), ...);
                 }, Arguments);
             }
-
-            /*
-            static std::string serialised = "";
-            if(ImGui::Button("Serialise"))
-            {
-                serialised = Serialise();
-            }
-            if(ImGui::Button("Deserialise"))
-            {
-                Deserialise(serialised);
-            }
-            ImGui::Text("Serialised: %s", serialised.c_str());
-            */
-
+            
             ImGui::PopID();
         }
 
@@ -146,7 +118,7 @@ namespace ImStructs
                 return "#warning Function call couldn't be compiled because the argument names were empty or not the same size";
             }
             
-            std::string call_args = "";
+            std::string call_args;
             
             std::apply([&](auto&&... args) {
                 ((call_args += ArgumentToString(args) + ", "), ...);
@@ -157,7 +129,7 @@ namespace ImStructs
 
             if constexpr (std::is_same_v<bool, result_type>)
             {
-                return ImStructComponent::Compile() + "if(" + FunctionName + "(" + call_args + ")) { /** TODO: Add code here for " + Label + " **/ }";
+                return ImStructComponent::Compile() + "if(" + FunctionName + "(" + call_args + ")) { /** TODO: Add code here for " + EditorLabel + " **/ }";
             }
             else
             {
@@ -168,9 +140,9 @@ namespace ImStructs
 
         [[nodiscard]] std::string Serialise() const override {
             std::stringstream ss;
-            ss << FunctionName << "##" << "69420" << "("; // TODO: Implement hash
+            ss << Name << "##" << "69420" << "("; // TODO: Implement hash
             ss << ImStructComponent::Serialise() << ", ";
-            constexpr auto serialise = [&ss](auto&& arg) {
+            const auto serialise = [&ss](auto&& arg) {
                 ImSerialise(ss, arg);
                 ss << ", ";
             };
@@ -189,12 +161,11 @@ namespace ImStructs
             {
                 ss << call.Params[i] << " ";
             }
+            
             std::apply([&ss](auto&... args)
             {
                 (ImDeserialise(ss, args), ...);
             }, Arguments);
-            // set first parameter to label if it is a const char* -> this was a quick fix for imstructs not having serialisation yet
-            //Label = params.substr(0, params.find(" "));
         }
 
         // write a destructor

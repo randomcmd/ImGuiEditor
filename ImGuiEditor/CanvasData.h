@@ -27,15 +27,16 @@ namespace ReMi
 class CanvasContainer
 {
 public:
-    explicit CanvasContainer();
+    CanvasContainer();
 
     std::vector<ImStructs::ImStructUPtr> ImStructs;
-    std::optional<ImGuiStyle> m_ImGuiStyle;
     ImStructs::ImStruct* ActiveIn = nullptr;
     
     bool CanvasDropTarget(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
     void AddDropTargetToCanvas(size_t i, ImStructs::CanvasFlags canvas_flags = 0, ImStructs::ComponentFlags component_flags = 0);
     void UpdateCanvasFlags();
+    void AddComponent(ImStructs::ImStructUPtr component);
+    void MoveComponent(size_t origin, size_t destination);
 
     void Draw();
     void DrawTree() const;
@@ -43,6 +44,8 @@ public:
     [[nodiscard]] std::string Serialise() const;
     void Clear();
     void Deserialise(std::string string, ReMi::Editor& editor);
+
+    ReMi::Editor& Editor() const;
 
     using Compiler = CompilerFramework::Compiler;
     std::string Compile(Compiler* compiler) const;

@@ -8,12 +8,7 @@
 #include "Editor.h"
 #include "Compiler.h"
 
-CanvasContainer::CanvasContainer() : m_UUID(rand())
-{
-    ImGuiStyle dark;
-    ImGui::StyleColorsDark(&dark);
-    m_ImGuiStyle = dark;
-}
+CanvasContainer::CanvasContainer() : m_UUID(rand()) { }
 
 bool CanvasContainer::CanvasDropTarget(const size_t i, const ImStructs::CanvasFlags canvas_flags, const ImStructs::ComponentFlags component_flags)
 {
@@ -40,28 +35,19 @@ void CanvasContainer::AddDropTargetToCanvas(const size_t i, const ImStructs::Can
         auto component = construct();
         component->ComponentFlags = component_flags;
         component->CanvasFlags = canvas_flags;
-        component->ActiveIn = ActiveIn->ActiveIn;
-        component->Label += std::format("##{}", ActiveIn->ActiveIn->ComponentID());
+        component->ActiveIn = &Editor();
+        component->EditorLabel += std::format("##{}", Editor().ComponentID());
         const auto iterator = ImStructs.begin() + static_cast<long long>(i);
         ImStructs.emplace(iterator, component);
     }
     if(const auto payload = ImGui::AcceptDragDropPayload(m_MoveType.c_str()))
     {
         // relocate old component
-        auto componentIndex = *static_cast<size_t*>(payload->Data);
-        const auto component = ImStructs.at(componentIndex).release();
+        const auto componentIndex = *static_cast<size_t*>(payload->Data);
+        const auto component = ImStructs.at(componentIndex).get();
         component->ComponentFlags = component_flags;
         component->CanvasFlags = canvas_flags;
-        const auto it = ImStructs.begin() + i;
-
-        if(componentIndex >= i) // if we move it back
-        {
-            //it++;
-            componentIndex++;
-        }
-        
-        ImStructs.emplace(it, component);
-        ImStructs.erase(ImStructs.begin() + componentIndex);
+        MoveComponent(componentIndex, i);
     }
 }
 
@@ -77,12 +63,29 @@ void CanvasContainer::UpdateCanvasFlags()
     }
 }
 
+void CanvasContainer::AddComponent(ImStructUPtr component)
+{
+    ImStructs.emplace_back(component.release());
+    ImStructs.back()->EditorLabel += std::format("##{}", Editor().ComponentID());
+    ImStructs.back()->ActiveIn = &Editor();
+}
+
+void CanvasContainer::MoveComponent(size_t origin, size_t destination)
+{
+    const auto component = ImStructs.at(origin).release();
+    const auto it = ImStructs.begin() + destination;
+    if(origin >= destination) // if we move it back
+    {
+        //it++;
+        origin++;
+    }
+    ImStructs.emplace(it, component);
+    ImStructs.erase(ImStructs.begin() + origin);
+}
+
 void CanvasContainer::Draw()
 {
     UpdateCanvasFlags();
-    if(ReMi::Editor::override_color_scheme) {
-        ImGui::GetStyle() = m_ImGuiStyle.value_or(ImGui::GetStyle());
-    }
     CanvasDropTarget(0);
     
     // iterate through all the structs and draw them
@@ -99,7 +102,7 @@ void CanvasContainer::Draw()
         {
             std::string payload = "Hello Sannej!";
             ImGui::SetDragDropPayload(m_MoveType.c_str(), &i, sizeof(i));
-            ImGui::SetTooltip("Movingg Component %s", component->Label.c_str());
+            ImGui::SetTooltip("Movingg Component %s", component->EditorLabel.c_str());
             ImGui::EndDragDropSource();
         }
 
@@ -149,7 +152,24 @@ void CanvasContainer::DrawTree() const
 {
     for (const auto& component : ImStructs)
     {
-        if(ImGui::TreeNode(component->Label.c_str()))
+        const auto opened = ImGui::TreeNode(component->EditorLabel.c_str());
+        if(ImGui::BeginPopupContextItem())
+        {
+            if(ImGui::MenuItem("Open"))
+            {
+                component->CanvasFlags |= ImStructs::CanvasFlags_Clicked;
+            }
+            // push text color red
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(8.0f, 0.3f, 0.4f, 1.0f));
+            if(ImGui::MenuItem("Delete"))
+            {
+                component->CanvasFlags |= ImStructs::CanvasFlags_Delete;
+            }
+            ImGui::EndPopup();
+            // pop text color
+            ImGui::PopStyleColor();
+        }
+        if(opened)
         {
             ImGui::PushID(&component);
             component->DrawTree();
@@ -203,8 +223,8 @@ void CanvasContainer::Deserialise(std::string string, ReMi::Editor& editor)
     const auto call = ImSerialisation::Call(string);
     for(const auto& param : call.Params) 
     {
-        const auto inner_call = ImSerialisation::Call(param);
-        auto component = editor.TemporaryConstructFromName(inner_call.FunctionName);
+        const auto param_call = ImSerialisation::Call(param);
+        auto component = editor.TemporaryConstructFromName(param_call.FunctionName);
         assert(component && "Component not found in editor");
         component->ActiveIn = &editor;
         component->Deserialise(param);
@@ -212,9 +232,13 @@ void CanvasContainer::Deserialise(std::string string, ReMi::Editor& editor)
     }
 }
 
+ReMi::Editor& CanvasContainer::Editor() const
+{
+    return *ActiveIn->ActiveIn;
+}
+
 std::string CanvasContainer::Compile(CompilerFramework::Compiler* compiler) const
 {
-    
     return compiler->Compile(this);
 }
 

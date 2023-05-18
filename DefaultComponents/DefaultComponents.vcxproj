@@ -169,7 +169,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ImGuiEditor\CanvasData.cpp" />
-    <ClCompile Include="..\ImGuiEditor\compiled.cpp" />
     <ClCompile Include="..\ImGuiEditor\EditorPluginAPI.cpp" />
     <ClCompile Include="..\ImGuiEditor\ImGradient.cpp" />
     <ClCompile Include="..\ImGuiEditor\ImStructs.cpp" />
@@ -191,6 +190,12 @@
     <ClInclude Include="..\ImGuiEditor\ComponentWrapper.h" />
     <ClInclude Include="..\ImGuiEditor\Editor.h" />
     <ClInclude Include="..\ImGuiEditor\ImSerialise.h" />
+    <ClInclude Include="Components.h" />
+    <ClInclude Include="DragAndSliders.h" />
+    <ClInclude Include="Inputs.h" />
+    <ClInclude Include="ColorAndMisc.h" />
+    <ClInclude Include="ScopedComponents.h" />
+    <ClInclude Include="Trees.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

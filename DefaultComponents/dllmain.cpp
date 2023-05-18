@@ -1,7 +1,11 @@
 #include "../ImGuiEditor/plugin/Plugin.h"
-#include "../ImGuiEDitor/ImGuiExtension.h"
-#include "../ImGuiEditor/ImStructs.h"
-#include "../ImGuiEditor/ComponentWrapper.h"
+
+#include "Components.h"
+#include "DragAndSliders.h"
+#include "Inputs.h"
+#include "ColorAndMisc.h"
+#include "ScopedComponents.h"
+#include "Trees.h"
 
 inline int add(int a, int b)
 {
@@ -9,7 +13,7 @@ inline int add(int a, int b)
 }
 
 extern "C" __declspec(dllexport) Plugin* create(ImGuiContext* context, ImGuiMemAllocFunc allocFunc,
-                                                ImGuiMemFreeFunc freeFunc)
+    ImGuiMemFreeFunc freeFunc)
 {
     auto plugin = new Plugin();
     ImGui::SetCurrentContext(context);
@@ -22,224 +26,107 @@ extern "C" __declspec(dllexport) Plugin* create(ImGuiContext* context, ImGuiMemA
         .Github = "https://www.github.com/randomcmd/ImGuiEditor"
     };
 
-    plugin->ComponentMaps = {
+    plugin->ComponentMaps = 
+    {
         {
-            "Built-in",
+            "Components", 
             {
-                    {
-                        "Add random text",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            return new ImStructs::Text();
-                        })
-                    },
-                    {
-                        "Add random button",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            const auto component = new ImStructs::Button();
-                            component->Label = "hej button";
-                            return component;
-                        })
-                    },
-                    {
-                        "Add random input",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            const auto inputTextData = new ImStructs::InputText();
-                            inputTextData->Label = "hej user input";
-                            return inputTextData;
-                        })
-                    },
-                    {
-                        "just for compilation",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            const auto component = ImStructs::make_component_wrapper(&add, 1, 2);
-                            component->Name = "add";
-                            component->FunctionName = "add";
-                            component->ArgumentNames = {"a", "b"};
-                            component->CanvasFlags = ImStructs::CanvasFlags_Clicked;
-                            return component;
-                        })
-                    },
-                    {
-                        "Add text (ComponentWrapper)##ImGui::TextUnformatted",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            const auto text = ImStructs::make_component_wrapper(
-                                &ImGui::TextUnformatted, static_cast<const char*>("Hello, world!"), nullptr);
-                            text->Name = "Text";
-                            text->FunctionName = "ImGui::TextUnformatted";
-                            text->ArgumentNames = {"text", "text_end"};
-                            return text;
-                        })
-                    },
-                    {
-                        "Add input text (ComponentWrapper)##ImGui::InputText",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*InputText)(const char*, std::string*, ImGuiInputTextFlags, ImGuiInputTextCallback,
-                                              void*) = ImGui::InputText;
-                            const auto input_text = ImStructs::make_component_wrapper(
-                                std::function(InputText), static_cast<const char*>("Input Text In Me"),
-                                new std::string("Buffer"), 0, static_cast<ImGuiInputTextCallback>(nullptr),
-                                static_cast<void*>(nullptr));
-                            input_text->Name = "Input Text";
-                            input_text->FunctionName = "ImGui::InputText";
-                            input_text->ArgumentNames = {"Label", "Buf", "Flags", "Callback", "User_data"};
-                            return input_text;
-                        })
-                    },
-                    {
-                        "Add float slider (ComponentWrapper)##ImGui::SliderFloat",
-                        new ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*SliderFloat)(const char*, float*, float, float, const char*, ImGuiSliderFlags) = ImGui::SliderFloat;
-                            const auto slider_float = ImStructs::make_component_wrapper(
-                                std::function(SliderFloat), static_cast<const char*>("Slider Float In Me"), new float(0.0f),
-                                0.0f, 1.0f, static_cast<const char*>("%.3f"), 1.0f);
-                            slider_float->Name = "Slider Float";
-                            slider_float->FunctionName = "ImGui::SliderFloat";
-                            slider_float->ArgumentNames = {"Label", "V", "V_min", "V_max", "Format", "Power"};
-                            return slider_float;
-                        })
-                    },
-                    {
-                        "Add Gradient Button V1 (ComponentWrapper)##ImGui::ColoredButtonV1",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*ColoredButton)(const char*, const ImVec2&, unsigned int, unsigned int, unsigned int) =
-                                ImGui::ColoredButtonV1;
-                            const auto colored_button = ImStructs::make_component_wrapper(
-                                std::function(ColoredButton), static_cast<const char*>("Gradient Button V1"),
-                                *new ImVec2(0, 0), *new ImColor(1.0f, 1.0f, 1.0f, 1.0f), *new ImColor(0xA020F0FF),
-                                *new ImColor(0x296d98FF));
-                            colored_button->Name = "Gradient Button V1";
-                            colored_button->FunctionName = "ImGui::ColoredButtonV1";
-                            colored_button->ArgumentNames = {"Label", "Size", "Color", "ColorHovered", "ColorActive"};
-                            return colored_button;
-                        })
-                    },
-                },
-            },
-            {
-                "Scoped ImStructs Test",
-                {
-                    {
-                        "Window",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*Begin)(const char*, bool*, ImGuiWindowFlags) = ImGui::Begin;
-                            void (*End)() = ImGui::End;
-                            const auto begin = ImStructs::make_component_wrapper(
-                                ImGui::Begin, static_cast<const char*>("Window"), new bool(false), 0);
-                            const auto end = ImStructs::make_component_wrapper(ImGui::End);
-                            const auto window = new ImStructs::ScopedImStruct(begin, end);
-                            begin->Name = "Begin";
-                            begin->FunctionName = "ImGui::Begin";
-                            begin->ArgumentNames = {"Name", "Open", "Flags"};
-                            end->Name = "End";
-                            end->FunctionName = "ImGui::End";
-                            end->ArgumentNames = {};
-                            window->CallEndOnlyIfBeginReturnsTrue = false;                      // This is for using the legacy scoped functions
-                            window->CanvasFlags = ImStructs::CanvasFlags_Clicked;               // TODO: Add proper way to click on the window
-                            return window;
-                        })
-                    },
-                    {
-                        "Tree Node##ImGui::TreeNode",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*TreeNode)(const char*) = ImGui::TreeNode;
-                            void (*TreePop)() = ImGui::TreePop;
-                            const auto tree_node = ImStructs::make_component_wrapper(std::function(TreeNode), static_cast<const char*>("Tree Node"));
-                            const auto tree_pop = ImStructs::make_component_wrapper(ImGui::TreePop);
-                            const auto tree = new ImStructs::ScopedImStruct(tree_node, tree_pop);
-                            tree->Name = "ImGui::TreeNode";
-                            tree->CanvasFlags = ImStructs::CanvasFlags_Clicked;
-                            tree_node->Name = "Tree Node";
-                            tree_node->FunctionName = "ImGui::TreeNode";
-                            tree_node->ArgumentNames = {"Label"};
-                            tree_pop->Name = "Tree Pop";
-                            tree_pop->FunctionName = "ImGui::TreePop";
-                            tree_pop->ArgumentNames = {};
-                            return tree;
-                        })
-                    },
-                    {
-                        "Combo",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*BeginCombo)(const char*, const char*, ImGuiComboFlags) = ImGui::BeginCombo;
-                            void (*EndCombo)() = ImGui::EndCombo;
-                            const auto begin_combo = ImStructs::make_component_wrapper(
-                                ImGui::BeginCombo, static_cast<const char*>("Combo"), static_cast<const char*>("Combo"), 0);
-                            const auto end_combo = ImStructs::make_component_wrapper(ImGui::EndCombo);
-                            const auto combo = new ImStructs::ScopedImStruct(begin_combo, end_combo);
-                            combo->CanvasFlags = ImStructs::CanvasFlags_Clicked;
-                            begin_combo->Name = "Begin Combo";
-                            begin_combo->FunctionName = "ImGui::BeginCombo";
-                            begin_combo->ArgumentNames = {"Label", "Preview_value", "Flags"};
-                            end_combo->Name = "End Combo";
-                            end_combo->FunctionName = "ImGui::EndCombo";
-                            end_combo->ArgumentNames = {};
-                            return combo;
-                        })
-                    },
-                    {
-                        "Selectable",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*Selectable)(const char*, bool*, ImGuiSelectableFlags, const ImVec2&) = ImGui::Selectable;
-                            const auto selectable = ImStructs::make_component_wrapper(
-                                std::function(Selectable), static_cast<const char*>("Selectable"), new bool(false), 0, *new ImVec2(0, 0));
-                            selectable->Name = "Selectable";
-                            selectable->FunctionName = "ImGui::Selectable";
-                            selectable->ArgumentNames = {"Label", "Selected", "Flags", "Size"};
-                            return selectable;
-                        })
-                    },
-                    {
-                        "Collapsing Header",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*CollapsingHeader)(const char*, ImGuiTreeNodeFlags) = ImGui::CollapsingHeader;
-                            const auto begin_collapsing_header = ImStructs::make_component_wrapper(
-                                std::function(CollapsingHeader), static_cast<const char*>("Collapsing Header"), 0);
-                            const auto end_collapsing_header = ImStructs::make_component_wrapper(std::function([]() {}));
-                            const auto collapsing_header = new ImStructs::ScopedImStruct(begin_collapsing_header, end_collapsing_header);
-                            begin_collapsing_header->Name = "Collapsing Header";
-                            begin_collapsing_header->FunctionName = "ImGui::CollapsingHeader";
-                            begin_collapsing_header->ArgumentNames = {"Label", "Flags"};
-                            end_collapsing_header->Name = "End Collapsing Header";
-                            end_collapsing_header->FunctionName = "// Collapsing Header Has No End Function";
-                            end_collapsing_header->ArgumentNames = {};
-                            return collapsing_header;
-                        })
-                    },
-                    {
-                        "Tab Bar",
-                        new const ImStructs::ImGuiComponentFactory([]()
-                        {
-                            bool (*BeginTabBar)(const char*, ImGuiTabBarFlags) = ImGui::BeginTabBar;
-                            void (*EndTabBar)() = ImGui::EndTabBar;
-                            const auto begin_tab_bar = ImStructs::make_component_wrapper(
-                                std::function(BeginTabBar), static_cast<const char*>("Tab Bar"), 0);
-                            const auto end_tab_bar = ImStructs::make_component_wrapper(std::function(EndTabBar));
-                            const auto tab_bar = new ImStructs::ScopedImStruct(begin_tab_bar, end_tab_bar);
-                            begin_tab_bar->Name = "Begin Tab Bar";
-                            begin_tab_bar->FunctionName = "ImGui::BeginTabBar";
-                            begin_tab_bar->ArgumentNames = {"Str_id", "Flags"};
-                            end_tab_bar->Name = "End Tab Bar";
-                            end_tab_bar->FunctionName = "ImGui::EndTabBar";
-                            end_tab_bar->ArgumentNames = {};
-                            return tab_bar;
-                        })
-                    }
-                }   
+                    { "Text", Text },
+                    { "Text Separator##TextSeperator", TextSeparator },
+                    { "Button", Button },
+                    { "Colored Button##ColoredButtonV1", ColoredButtonV1 },
+                    { "Small Button##SmallButton", SmallButton },
+                    { "Invisible Button##InvisibleButton", InvisibleButton },
+                    { "Arrow Button##ArrowButton", ArrowButton },
+                    { "Checkbox", Checkbox },
+                    { "Radio Button##RadioButton", RadioButton },
+                    { "Progress Bar##ProgressBar", ProgressBar },
+                    { "Bullet", Bullet },
+                    { "Text with bool##ValueBool", ValueBool },
+                    { "Text with int##ValueInt", ValueInt },
+                    { "Text with uint##ValueUInt", ValueUnsignedInt },
+                    { "Text with float##ValueFloat", ValueFloat }
             }
-        };
+        },
+        {
+            "Sliders and Drag Components",
+            {
+                { "Drag Float##DragFloat", DragFloat },
+                { "Drag Float2##DragFloat2", DragFloat2 },
+                { "Drag Float3##DragFloat3", DragFloat3 },
+                { "Drag Float4##DragFloat4", DragFloat4 },
+                // { "Drag Float Range2##DragFloatRange2", DragFloatRange2 } DOES NOT COMPILE
+                { "Drag Int##DragInt", DragInt },
+                { "Drag Int2##DragInt2", DragInt2 },
+                { "Drag Int3##DragInt3", DragInt3 },
+                { "Drag Int4##DragInt4", DragInt4 },
+                // { "Drag Int Range2##DragIntRange2", DragIntRange2 }, DOES NOT COMPILE
+                { "Slider Float##SliderFloat", SliderFloat },
+                { "Slider Float2##SliderFloat2", SliderFloat2 },
+                { "Slider Float3##SliderFloat3", SliderFloat3 },
+                { "Slider Float4##SliderFloat4", SliderFloat4 },
+                { "Slider Angle##SliderAngle", SliderAngle },
+                { "Slider Int##SliderInt", SliderInt },
+                { "Slider Int2##SliderInt2", SliderInt2 },
+                { "Slider Int3##SliderInt3", SliderInt3 },
+                { "Slider Int4##SliderInt4", SliderInt4 },
+                { "Vertical Slider Float##VSliderFloat", VSliderFloat },
+                { "Vertical Slider Int##VSliderInt", VSliderInt },
+            }
+        },
+        {
+            "Inputs",
+            {
+                { "Input Text##InputTextString", InputTextStdString },
+                { "Input TextMultiline##InputTextMultilineString", InputTextMultilineStdString },
+                { "Input TextWithHint##InputTextWithHintString", InputTextWithHintStdString },
+                { "Input Float##InputFloat", InputFloat },
+                { "Input Float2##InputFloat2", InputFloat2 },
+                { "Input Float3##InputFloat3", InputFloat3 },
+                { "Input Float4##InputFloat4", InputFloat4 },
+                { "Input Int##InputInt", InputInt },
+                { "Input Int2##InputInt2", InputInt2 },
+                { "Input Int3##InputInt3", InputInt3 },
+                { "Input Int4##InputInt4", InputInt4 },
+                { "Input Double##InputDouble", InputDouble },
+                // { "Input Scalar N", InputScalarN },
+                // { "Input Text using const char*##InputText", InputText },
+                // { "Input Text Multiline using const char*##InputTextMultiline", InputTextMultiline },
+                // { "Input Text With Hint using const char*##InputTextWithHint", InputTextWithHint },
+            }
+        },
+        {
+            "Colors and misc",
+            {
+                { "Color Edit3##ColorEdit3", ColorEdit3 },
+                { "Color Edit4##ColorEdit4", ColorEdit4 },
+                { "Color Picker3##ColorPicker3", ColorPicker3 },
+                { "Color Picker4##ColorPicker4", ColorPicker4 },
+                { "Color Button##ColorButton", ColorButton },
+                // { "Selectable using bool##Selectable", Selectable }, DEP
+                // { "Selectable using bool*##SelectableWithPointer", SelectableWithPointer }
+            }
+        },
+        {
+            "Scoped Components",
+            {
+                { "Combo", Combo },
+                { "List Box##ListBox", ListBox },
+                // { "Menu Bar##MenuBar", MenuBar }, DOESNT WORK
+                { "Menu", Menu },
+                // { "Child", Child },
+            }
+        },
+        {
+            "Trees and Headers",
+            {
+                { "Tree Node##TreeNode", TreeNode },
+                { "Tree Node with Flags##TreeNodeEx", TreeNodeEx },
+                { "Collapsing Header##CollapsingHeader", CollapsingHeader }
+            }
+        }
+    };
+        
     return plugin;
 }
             

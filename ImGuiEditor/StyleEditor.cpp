@@ -132,7 +132,7 @@ static const std::map<ImGuiCol, std::string> ColorMap = CreateColorMap();
 
 void ReMi::StyleEditor(ImGuiStyle& style)
 {
-    static std::string search = "";
+    static std::string search;
     ImGui::InputText("Search", &search);
     if(ImGui::TreeNode("Colors"))
     {

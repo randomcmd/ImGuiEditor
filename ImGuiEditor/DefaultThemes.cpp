@@ -61,7 +61,7 @@ ImGuiStyle ReMi::RenewedTheme()
 
 	// Text
 	colors[ImGuiCol_Text] =					ImColor(255, 255, 255);
-	colors[ImGuiCol_TextDisabled] =			lighter;
+	colors[ImGuiCol_TextDisabled] =			w1;
 
 	// Backrounds and Borders (Window, Child, Popup)
 	colors[ImGuiCol_WindowBg] =				backround;

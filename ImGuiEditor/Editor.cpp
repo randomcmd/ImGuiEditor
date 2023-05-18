@@ -32,7 +32,6 @@ ReMi::Editor::Editor()
     ApplySettings();
     const auto default_plugin_path = "DefaultComponents.dll";
     LoadPlugin(default_plugin_path);
-    m_Canvas.Deserialise(FileSystem::ReadFile(R"(resources\Sample Save Files\default.lay)"), *this);
 }
 
 void ReMi::Editor::PreNewFrame()
@@ -77,6 +76,10 @@ void ReMi::Editor::Render()
     if(m_EditorSettings.OpenWindows["Compile Window"]) {
         CompileWindow();
     }
+    if(m_EditorSettings.OpenWindows["Hello World Window"])
+    {
+        HelloWorldWindow();
+    }
 }
 
 void ReMi::Editor::DebugWindow()
@@ -111,26 +114,26 @@ void ReMi::Editor::DebugWindow()
 
     static bool ShowStyleEditor = false;
     ImGui::Checkbox("Style Editor", &ShowStyleEditor);
-    if (ShowStyleEditor && m_Canvas.m_ImGuiStyle.has_value())
-    {
-        ImGui::Begin("Style Editor", &ShowStyleEditor);
-        
-        static ImGuiStyle style = m_Canvas.m_ImGuiStyle.value();
-        static ImGuiStyle default_style = style;
-        static bool always_apply = false;
-        ReMi::StyleEditor(style);
-        ImGui::Checkbox("Always Apply Style", &always_apply);
-        if(always_apply || ImGui::Button("Apply Style"))
-        {
-            m_Canvas.m_ImGuiStyle = style;
-        }
-        if(ImGui::Button("Reset Style"))
-        {
-            m_Canvas.m_ImGuiStyle = default_style;
-        }
-        
-        ImGui::End();
-    }
+    // if (ShowStyleEditor && m_Canvas.m_ImGuiStyle.has_value())
+    // {
+    //     ImGui::Begin("Style Editor", &ShowStyleEditor);
+    //     
+    //     static ImGuiStyle style = m_Canvas.m_ImGuiStyle.value();
+    //     static ImGuiStyle default_style = style;
+    //     static bool always_apply = false;
+    //     ReMi::StyleEditor(style);
+    //     ImGui::Checkbox("Always Apply Style", &always_apply);
+    //     if(always_apply || ImGui::Button("Apply Style"))
+    //     {
+    //         m_Canvas.m_ImGuiStyle = style;
+    //     }
+    //     if(ImGui::Button("Reset Style"))
+    //     {
+    //         m_Canvas.m_ImGuiStyle = default_style;
+    //     }
+    //     
+    //     ImGui::End();
+    // }
     
     ImGui::End();
 }
@@ -152,6 +155,7 @@ void ReMi::Editor::RightClickMenu()
             if(ImGui::MenuItem("New Project"))
             {
                 m_Canvas.Clear();
+                m_LastComponentID = 0;
             }
             if(ImGui::BeginMenu("Open Project"))
             {
@@ -173,7 +177,7 @@ void ReMi::Editor::RightClickMenu()
             ImGui::Separator();
             if(ImGui::MenuItem("Save Project"))
             {
-                const auto save_path = FileSystem::ShowOpenFileDialog();
+                const auto save_path = FileSystem::ShowSaveFileDialog("ImGuiEditorProject", "lay");
                 const auto save_data = m_Canvas.Serialise();
                 FileSystem::WriteFile(save_path, save_data);
             }
@@ -305,27 +309,90 @@ void ReMi::Editor::OpenProjectFromPath(const std::filesystem::path path)
     m_EditorSettings.AddProjectOpen(path);
 }
 
-void ReMi::Editor::AddComponent(ImStructUPtr component)
+void ReMi::Editor::HelloWorldWindow()
 {
-    m_Canvas.ImStructs.emplace_back(component.release());
-    m_Canvas.ImStructs.back()->Label += std::format("##{}", m_LastComponentID++);
-    m_Canvas.ImStructs.back()->ActiveIn = this;
+    ImGui::Begin("Hello, world!", &m_EditorSettings.OpenWindows["Hello World Window"]);
+    ImGui::Text("Welcome back user :D\nClick on one of the projects below to open it!\nYou can also choose to create a new project!\nIf you are new you can also check out the tutorial!");
+    ImGui::SeparatorText("Last Projects");
+    for(const auto& path : m_EditorSettings.LastOpenedProjects)
+    {
+        if(ImGui::Button(path.filename().string().c_str()))
+        {
+            OpenProjectFromPath(path);
+            m_EditorSettings.OpenWindows["Hello World Window"] = false;
+        }
+    }
+    ImGui::SeparatorText("New Project");
+    if(ImGui::Button("Create new project"))
+    {
+        m_Canvas.Clear();
+        m_LastComponentID = 0;
+        m_EditorSettings.OpenWindows["Hello World Window"] = false;
+    }
+    ImGui::SeparatorText("Tutorial");
+    if(ImGui::Button("Open Tutorial"))
+    {
+        OpenProjectFromPath("Tutorial Project.lay");
+        m_EditorSettings.OpenWindows["Hello World Window"] = false;
+    }
+    ImGui::End();
+}
+
+std::string LowerString(std::string_view string)
+{
+    std::string lower{string};
+    std::ranges::transform(lower, lower.begin(), [](unsigned char c){ return std::tolower(c); });
+    return lower;
 }
 
 void ReMi::Editor::EditorWindow()
 {
-    ImGui::Begin("Hello, world!");
-    ImGui::End();
+    ImGui::Begin("Components");
+    
+    static std::string search;
+    const bool use_search = !search.empty();
+    const std::string search_normal = LowerString(search);
+    
+    
+    //ImGui::SetNextItemWidth(-1);
+    ImGui::SetCursorPosX(5);
+    ImGui::InputTextWithHint("##search", "Search", &search);
     
     for (auto& [name, plugin_map] : m_ComponentMaps) {
-        ImGui::Begin(name.c_str());
-        for (auto& [name, component_factory] : plugin_map)
-        {
-            ComponentButton(name, component_factory);
+        if(!use_search) {
+            if(ImGui::CollapsingHeader(name.c_str())) {
+                for (auto& [component_name, component_factory] : plugin_map)
+                {
+                    ComponentButton(component_name, component_factory);
+                }
+            }
+            continue;
         }
-        ImGui::End();
-    }
 
+        bool header = false;
+        bool header_open = false;
+        ImGui::PushID("using_search");
+        for (auto& [component_name, component_factory] : plugin_map)
+        {
+            const std::string component_name_normal = LowerString(component_name);
+            if(component_name_normal.find(search_normal) == std::string::npos) continue;
+            if(!header)
+            {
+                ImGui::SetNextItemOpen(true);
+                if(ImGui::CollapsingHeader(name.c_str()))
+                {
+                    header_open = true;
+                }
+                header = true;
+            }
+            if(header_open) {
+                ComponentButton(component_name, component_factory);
+            }
+        }
+        ImGui::PopID();
+    }
+    
+    ImGui::End();
     ImGui::EndChild();
     
     // can i anchor a buttom to the bottom of the window? a: no q: WAIT WHAT? a: yes, but you have to do it manually
@@ -347,6 +414,10 @@ void ReMi::Editor::ComponentWindow(bool* open)
         {
             ImGui::PushID(i);
             component->Editor();
+            if(i != m_Canvas.ImStructs.size() - 1 && m_Canvas.ImStructs.at(i + 1)->CanvasFlags & ImStructs::CanvasFlags_Clicked)
+            {
+                ImGui::Separator();
+            }
             ImGui::PopID();
         }
     }
@@ -404,9 +475,6 @@ void ReMi::Editor::SaveAndLoadWindow()
 
 void ReMi::Editor::Canvas()
 {
-    if(override_color_scheme) {
-        ImGui::GetStyle() = m_Canvas.m_ImGuiStyle.value_or(ImGui::GetStyle());
-    }
     ImGui::Begin("Canvas");
     m_Canvas.Draw();
     ImGui::End();
@@ -417,7 +485,7 @@ void ReMi::Editor::ComponentButton(std::string_view label, const ImGuiComponentF
     if(ImGui::Button(label.data()))
     {
         const auto component = factory->operator()();
-        AddComponent(ImStructUPtr(component));
+        m_Canvas.AddComponent(ImStructUPtr(component));
     }
     if(ImGui::BeginDragDropSource())
     {

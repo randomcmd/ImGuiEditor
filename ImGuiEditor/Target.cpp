@@ -1,4 +1,6 @@
 ﻿#include "Target.h"
+
+#include <iostream>
 #include <sstream>
 
 #include "ImStructs.h"

@@ -7,16 +7,30 @@
 #include "imgui_internal.h"
 
 #include "CanvasData.h"
+#include "ImString.h"
 
-class CanvasContainer;
+class ImString;
 
-namespace ImStructs {
+namespace ReMi
+{
+    class Editor;
+}
+
+namespace ImStructs
+{
+    struct ImStruct;
+    struct ImStructComponent;
+    struct ScopedImStruct;
+    
     using ImStructUPtr =             std::unique_ptr<ImStruct>;
     using ImStructComponentUPtr =    std::unique_ptr<ImStructComponent>;
     using ScopedImStructUPtr =       std::unique_ptr<ScopedImStruct>;
+    
     // Wrap make_component_wrapper in a ImGuiComponentFactory so that it can easily be saved in a dict for creation of that component
     using ImGuiComponentFactory = std::function<ImStruct*()>;
+}
 
+namespace ImStructs {
     using CanvasFlags = int;
     auto constexpr CanvasFlags_None = 0;
     auto constexpr CanvasFlags_Clicked = 1 << 0;
@@ -29,22 +43,26 @@ namespace ImStructs {
 
     struct ImStruct
     {
-        std::string Label = "default"; const char* FallBackLabel = Label.c_str();       // Label used by some components also used as variable name for serialization
-        std::string EditorLabel = "default";
+        virtual ~ImStruct() = default;
+        
+        std::string EditorLabel = "Default";                                            // Variable Name and internal label NOT USED BY COMPONENTS AS LABLE VALUE
         ReMi::Editor* ActiveIn = nullptr;                                               // Some components want to construct other components in the editor
+        
         virtual void PreDraw() = 0;                                                     // Called before drawing the component for example to set the cursor position when using override position
         virtual void Cleanup() = 0;                                                     // Clean up any changes to the style stack or cursor here
         virtual void Draw() = 0;                                                        // Draw the component
         virtual void PostDraw() = 0;                                                    // After drawing the component in the editor things like state syncing or gizmos can be done here WARNING THIS WILL NOT BE COMPILED
         virtual void Editor() = 0;                                                      // Draw editor for component in a separate window created by Editor.cpp
-        virtual void DrawTree() = 0;
+        virtual void DrawTree() = 0;                                                    // Draw tree recursively for component in the editor
+        
         bool DrawReturn;                                                                // if draw returns a boolean then place it here
+        
         CanvasFlags CanvasFlags = CanvasFlags_None;
         ComponentFlags ComponentFlags = ComponentFlags_None;
+        
         [[nodiscard]] virtual std::string Serialise() const;
         virtual void Deserialise(std::string str);
         virtual std::string Compile();
-        virtual ~ImStruct() = default;
     };
 
     struct ImStructComponent : ImStruct
@@ -124,7 +142,7 @@ namespace ImStructs {
         void Draw() override
         {
             ImStructComponent::Draw();
-            ImGui::Button(Label.c_str(), size);
+            ImGui::Button(EditorLabel.c_str(), size);
             if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
             if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         }
@@ -139,13 +157,13 @@ namespace ImStructs {
         {
             std::string buttonCall;
             if(size.x != 0.0f || size.y != 0.0f) {
-                buttonCall = "ImGui::Button(\"" + Label + "\", ImVec2(" + std::to_string(size.x) + ", " + std::to_string(size.y) + "))";
+                buttonCall = "ImGui::Button(\"" + EditorLabel + "\", ImVec2(" + std::to_string(size.x) + ", " + std::to_string(size.y) + "))";
             }
             else {
-                buttonCall = "ImGui::Button(\"" + Label + "\")"; // Removes optional parameter
+                buttonCall = "ImGui::Button(\"" + EditorLabel + "\")"; // Removes optional parameter
             }
             
-            return ImStructComponent::Compile() + "if(" + buttonCall + ") { /** TODO: Add code for " + Label + " **/ }"; /** hej chris **/
+            return ImStructComponent::Compile() + "if(" + buttonCall + ") { /** TODO: Add code for " + EditorLabel + " **/ }"; /** hej chris **/
         }
     };
 
@@ -159,7 +177,7 @@ namespace ImStructs {
         void Draw() override
         {
             ImStructComponent::Draw();
-            ImGui::InputText(Label.c_str(), &buf, flags, callback, user_data);
+            ImGui::InputText(EditorLabel.c_str(), &buf, flags, callback, user_data);
             if(ImGui::IsItemHovered()) ImGui::SetTooltip("Click to edit");
             if(ImGui::IsItemClicked()) CanvasFlags |= ImStructs::CanvasFlags_Clicked;
         }
@@ -172,7 +190,7 @@ namespace ImStructs {
 
         std::string Compile() override
         {
-            return ImStructComponent::Compile() + "ImGui::InputText(\"" + Label + "\", &" + Label + "buf, " + std::to_string(flags) + ", " + std::to_string((long long)callback) + ", " + std::to_string((long long)user_data) + ");";
+            return ImStructComponent::Compile() + "ImGui::InputText(\"" + EditorLabel + "\", &" + EditorLabel + "buf, " + std::to_string(flags) + ", " + std::to_string((long long)callback) + ", " + std::to_string((long long)user_data) + ");";
         }
     };
     
@@ -236,6 +254,14 @@ namespace ImStructs {
         {
             ImGui::InputFloat(label.data(), pointer);
         }
+        ImGui::PopID();
+    }
+
+    template <>
+    inline void EditorHelper(const std::string_view label, ImString* pointer, EditorHelperFlags flags)
+    {
+        ImGui::PushID(pointer);
+        ImGui::InputText(label.data(), pointer->StringPointer());
         ImGui::PopID();
     }
     

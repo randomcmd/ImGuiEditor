@@ -6,7 +6,7 @@ namespace ImStructs
 {
     ScopedImStruct::ScopedImStruct(ImStructComponent* begin, ImStructComponent* end) : Begin(begin), End(end)
     {
-        Canvas.m_ActiveIn = this;
+        Canvas.ActiveIn = this;
     }
 
     void ScopedImStruct::Draw()
@@ -30,11 +30,11 @@ namespace ImStructs
 
     void ScopedImStruct::Editor()
     {
-        ImGui::TextUnformatted(Label.c_str());
-        ImGui::InputText("Label", &Label);
-        if (Label.length() == 0)
+        ImGui::TextUnformatted(EditorLabel.c_str());
+        ImGui::InputText("Label", &EditorLabel);
+        if (EditorLabel.length() == 0)
         {
-            Label = "default";
+            EditorLabel = "default";
         }
         ImGui::SameLine();
         if (ImGui::Button("X"))
@@ -56,14 +56,17 @@ namespace ImStructs
         if(ImGui::TreeNodeEx("Open Canvas Components", ImGuiTreeNodeFlags_DefaultOpen))
         {
             // draw editor of all open components
-            for (const auto& component : Canvas.ImStructs)
+            for (size_t i = 0; i < Canvas.ImStructs.size(); i++)
             {
+                const auto& component = Canvas.ImStructs.at(i);
                 if (component->CanvasFlags & CanvasFlags_Clicked)
                 {
                     ImGui::PushID(&component);
                     component->Editor();
                     ImGui::PopID();
-                    ImGui::Separator();
+                    if(i != Canvas.ImStructs.size() - 1 && Canvas.ImStructs.at(i)->CanvasFlags & ImStructs::CanvasFlags_Clicked) {
+                        ImGui::Separator();
+                    }
                 }
             }
             ImGui::TreePop();
@@ -120,11 +123,16 @@ namespace ImStructs
 
     void ScopedImStruct::DrawTree()
     {
-        if(ImGui::TreeNode("Canvas")) {
-            if(ImGui::BeginDragDropTarget()) {
-                Canvas.AddDropTargetToCanvas(0);
-                ImGui::EndDragDropTarget();
-            }
+        const auto opened = ImGui::TreeNode("Canvas");
+        if(ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Drag and drop components here");
+        }
+        if(ImGui::BeginDragDropTarget()) {
+            Canvas.AddDropTargetToCanvas(0);
+            ImGui::EndDragDropTarget();
+        }
+        if(opened) {
             Canvas.DrawTree();
             ImGui::TreePop();
         }
