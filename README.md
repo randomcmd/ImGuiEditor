@@ -30,4 +30,15 @@ inline ImStructs::ImGuiComponentFactory* ColoredButtonV1 = new ImStructs::ImGuiC
 ```
 Check out the [DefaultComponent](DefaultComponents/) library shipped with the editor to get an idea of how plugins are written! Feel free to notify us about any libraries you have integrated into ImGuiEditor and we might make a page of third party plugins!
 
-:warning: **Pllugin API very experimental**: The API for defining plugins is not final and will change!
+:warning: **Plugin API very experimental**: The API for defining plugins is not final and will change!
+
+## Building with VS 2022
+1. Clone the project recursively with submodules
+2. Change the imconfig.h file in imgui to include the following preprocessor definitions
+    ```cpp
+    #define IMGUI_ENABLE_FREETYPE
+    #define IMGUI_ENABLE_STB_TRUETYPE
+    #define IMGUI_DEFINE_MATH_OPERATORS
+    #define IMGUI_USE_WCHAR32
+    ```
+3. Using Visual Studio 2022 build both the ImGuiEditor and DefaultComponents solution
