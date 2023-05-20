@@ -32,7 +32,7 @@ extern "C" __declspec(dllexport) Plugin* create(ImGuiContext* context, ImGuiMemA
             "Components", 
             {
                     { "Text", Text },
-                    { "Text Separator##TextSeperator", TextSeparator },
+                    { "Text Separator##SeparatorText", TextSeparator },
                     { "Button", Button },
                     { "Colored Button##ColoredButtonV1", ColoredButtonV1 },
                     { "Small Button##SmallButton", SmallButton },

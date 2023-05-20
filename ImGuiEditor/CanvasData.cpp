@@ -225,7 +225,10 @@ void CanvasContainer::Deserialise(std::string string, ReMi::Editor& editor)
     {
         const auto param_call = ImSerialisation::Call(param);
         auto component = editor.TemporaryConstructFromName(param_call.FunctionName);
-        assert(component && "Component not found in editor");
+        if(!component) {
+            std::cout << "Component " << param_call.FunctionName << " not found in editor" << std::endl;
+            assert(component && "Component not found in editor");
+        }
         component->ActiveIn = &editor;
         component->Deserialise(param);
         ImStructs.push_back(std::move(component));

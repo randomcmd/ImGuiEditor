@@ -312,7 +312,7 @@ void ReMi::Editor::OpenProjectFromPath(const std::filesystem::path path)
 void ReMi::Editor::HelloWorldWindow()
 {
     ImGui::Begin("Hello, world!", &m_EditorSettings.OpenWindows["Hello World Window"]);
-    ImGui::Text("Welcome back user :D\nClick on one of the projects below to open it!\nYou can also choose to create a new project!\nIf you are new you can also check out the tutorial!");
+    ImGui::Text("Hej Yan! Thanks for checking out my project! \nClick on The Cherno project to see a small introduction to the program!\nYou can also choose to create a new project!");
     ImGui::SeparatorText("Last Projects");
     for(const auto& path : m_EditorSettings.LastOpenedProjects)
     {
@@ -332,7 +332,7 @@ void ReMi::Editor::HelloWorldWindow()
     ImGui::SeparatorText("Tutorial");
     if(ImGui::Button("Open Tutorial"))
     {
-        OpenProjectFromPath("Tutorial Project.lay");
+        OpenProjectFromPath(R"(resources\Sample Save Files\tutorial.lay)");
         m_EditorSettings.OpenWindows["Hello World Window"] = false;
     }
     ImGui::End();

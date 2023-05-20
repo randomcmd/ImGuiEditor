@@ -178,6 +178,8 @@ namespace ImSerialisation
         Parameters parameters;
         std::stack<char> nesting_stack;
         size_t i = parameter_start, start_param = parameter_start;
+        bool in_string = false;
+        
         for(const char& c : call.substr(parameter_start, parameter_end - parameter_start))
         {
             if(c == '(')
@@ -188,9 +190,13 @@ namespace ImSerialisation
             {
                 nesting_stack.pop();
             }
+            if(c == '\"')
+            {
+                in_string = !in_string;
+            }
 
             const bool can_end_param = c == ',' || i == parameter_end - 1;
-            if(can_end_param && nesting_stack.empty())
+            if(can_end_param && nesting_stack.empty() && !in_string)
             {
                 if (nesting_stack.empty())
                 {

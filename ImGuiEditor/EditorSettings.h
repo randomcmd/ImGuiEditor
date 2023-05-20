@@ -21,7 +21,10 @@ namespace ReMi {
             {"Hello World Window", true}
         };
 
-        std::vector<std::filesystem::path> LastOpenedProjects = { R"(resources\Sample Save Files\defaults_smol_brother.lay)" };
+        std::vector<std::filesystem::path> LastOpenedProjects = {
+            R"(resources\Sample Save Files\thecherno.lay)"
+            //R"(resources\Sample Save Files\defaults_smol_brother.lay)"
+        };
         size_t MaxLastOpenedProjects = 10;
 
         void AddProjectOpen(std::filesystem::path path);

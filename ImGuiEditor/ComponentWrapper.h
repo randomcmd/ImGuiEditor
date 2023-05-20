@@ -35,7 +35,7 @@ namespace ImStructs
     inline std::string ArgumentToString(const std::string* value)  { return "new std::string(\"" + *value + "\")"; }
     inline std::string ArgumentToString(const ImVec2& value)       { return "ImVec2(" + FormatFloat(value.x) + ", " + FormatFloat(value.y) + ")"; }
     inline std::string ArgumentToString(const ImVec4& value)       { return "ImVec4(" + FormatFloat(value.x) + ", " + FormatFloat(value.y) + ", " + FormatFloat(value.z) + ", " + FormatFloat(value.w) + ")"; }
-    inline std::string ArgumentToString(const ImColor& value)      { return "ImColor({" + FormatFloat(value.Value.x) + ", " + FormatFloat(value.Value.y) + ", " + FormatFloat(value.Value.z) + ", " + FormatFloat(value.Value.w) + "})"; }
+    inline std::string ArgumentToString(const ImColor& value)      { return "ImColor(ImVec4{" + FormatFloat(value.Value.x) + ", " + FormatFloat(value.Value.y) + ", " + FormatFloat(value.Value.z) + ", " + FormatFloat(value.Value.w) + "})"; }
     inline std::string ArgumentToString(const ImU32& value)        { return "ImU32(" + std::to_string(value) + ")"; }
     inline std::string ArgumentToString(const nullptr_t value)     { return "nullptr /*nullptr_t*/"; }
 
