@@ -12,7 +12,7 @@ inline ImStructs::ImGuiComponentFactory* Text = new ImStructs::ImGuiComponentFac
     return component;
 });
 
-inline ImStructs::ImGuiComponentFactory* TextSeparator = new ImStructs::ImGuiComponentFactory([](){
+inline ImStructs::ImGuiComponentFactory* SeparatorText = new ImStructs::ImGuiComponentFactory([](){
     const auto component = ImStructs::make_component_wrapper(ImGui::SeparatorText, ImString("Hello, World!"));
     component->Name = "SeparatorText";
     component->FunctionName = "ImGui::SeparatorText";
