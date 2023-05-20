@@ -1,0 +1,23 @@
+CanvasContainer##0000(
+	Text##69420(ImStructComponent("Introduction", 0, 0, 0 0), "Hej Yan, welcome to your first ImGuiEditor project!", nullptr),
+	SeparatorText##69420(ImStructComponent("Default##4", 0, 0, 0 0), "Introduction"),
+	Text##69420(ImStructComponent("Text", 0, 0, 0 0), "Click on any component to edit it", nullptr),
+	Button##69420(ImStructComponent("EditMeButton", 0, 0, 0 0), "Edit me!", 210 64),
+	Text##69420(ImStructComponent("DragTutorial", 0, 0, 0 0), "Drag a component onto the canvas from the window on the right", nullptr),
+	SeparatorText##69420(ImStructComponent("AdvancedComponents", 0, 0, 0 0), "Advanced Components"),
+	TreeNode##69420(ImStruct("ScopedComponents"), TreeNode##69420(ImStructComponent("Default", 0, 0, 0 0), "Click to open scoped component!"), TreePop##69420(ImStructComponent("Default", 0, 0, 0 0)), 1, CanvasContainer##0000(
+	ColoredButtonV1##69420(ImStructComponent("fancy_button", 0, 0, 0 0), "What't this? A fancy gradient button?", 0 0, 1 1 1 1, 1 0.941177 0.12549 0.627451, 1 0.596078 0.427451 0.160784),
+	TreeNode##69420(ImStruct("Default##6"), TreeNode##69420(ImStructComponent("Default", 0, 0, 0 0), "Recursion"), TreePop##69420(ImStructComponent("Default", 0, 0, 0 0)), 1, CanvasContainer##0000(
+	Text##69420(ImStructComponent("Default##7", 0, 0, 0 0), "Look", nullptr),
+	Checkbox##69420(ImStructComponent("Default##9", 0, 0, 0 0), "at", 1),
+	ProgressBar##69420(ImStructComponent("Default##10", 0, 0, 0 0), 0.5, 256 0, "all"),
+	InputTextWithHintString##69420(ImStructComponent("Default##13", 0, 0, 0 0), "different", "these", "", 0, nullptr, nullptr),
+	ColoredButtonV1##69420(ImStructComponent("Default##15", 0, 0, 0 0), "components!", 0 0, 1 1 1 1, 1 0 0.936709 0.627451, 0 1 0.835443 0.160784),
+)),
+	Text##69420(ImStructComponent("RearrangeText", 0, 0, 0 0), "Rearrange components by dragging them!", nullptr),
+)),
+	SeparatorText##69420(ImStructComponent("SavingSection", 0, 0, 0 0), "Savind and Compiling"),
+	Text##69420(ImStructComponent("SaveText", 0, 0, 0 0), "Any gui you create can be saved to a human readable .lay file for opening and editing later!", nullptr),
+	Text##69420(ImStructComponent("CompileText", 0, 0, 0 0), "When you're done editing this file you can compile it!", nullptr),
+	Text##69420(ImStructComponent("ThankYou", 0, 0, 0 0), "Thank you so much for taking the time to look at my project c: Have fun looking around the program and code!", nullptr),
+);
